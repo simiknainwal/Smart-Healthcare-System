@@ -7,13 +7,21 @@ public class Hospital {
     private final ArrayList<Patient> patients;
     private final ArrayList<Doctor> doctors;
     private final ArrayList<Appointment> appointments;
+    private final ArrayList<Bed> beds;
     private final FileStorageManager storage;
+
+    // Fixed stay duration (in days) for each ward type
+    private static final int GENERAL_STAY = 7;
+    private static final int ICU_STAY = 3;
+    private static final int PRIVATE_STAY = 10;
+    private static final int SEMI_PRIVATE_STAY = 5;
 
     public Hospital() {
         storage = new FileStorageManager();
         patients = new ArrayList<>(storage.loadPatients());
         doctors = new ArrayList<>(storage.loadDoctors());
         appointments = new ArrayList<>(storage.loadAppointments());
+        beds = new ArrayList<>(storage.loadBeds());
     }
 
     // ==================== PATIENT OPERATIONS ====================
@@ -142,6 +150,7 @@ public class Hospital {
                 case "1": patientMenu(sc); break;
                 case "2": doctorMenu(sc); break;
                 case "3": appointmentMenu(sc); break;
+                case "4": bedMenu(sc); break;
                 case "0":
                     CounterManager.saveAll();
                     System.out.println("\nThank you for using HospiCare. Goodbye!");
@@ -160,6 +169,7 @@ public class Hospital {
         System.out.println("║   1. Patient Management                  ║");
         System.out.println("║   2. Doctor Management                   ║");
         System.out.println("║   3. Appointment Management              ║");
+        System.out.println("║   4. Bed Management                      ║");
         System.out.println("║                                          ║");
         System.out.println("║   0. Exit                                ║");
         System.out.println("║                                          ║");
@@ -436,6 +446,232 @@ public class Hospital {
             scheduleAppointment(pId, dId, date);
         } catch (Exception e) {
             System.out.println("  Appointment error: " + e.getMessage());
+        }
+    }
+
+    // ---------- BED MENU ----------
+
+    private void bedMenu(Scanner sc) {
+        while (true) {
+            System.out.println("\n┌──────────────────────────────────────────┐");
+            System.out.println("│           BED MANAGEMENT                 │");
+            System.out.println("├──────────────────────────────────────────┤");
+            System.out.println("│   1. View All Beds                       │");
+            System.out.println("│   2. Check Availability by Ward          │");
+            System.out.println("│   3. Book a Bed                          │");
+            System.out.println("│   4. Discharge Patient (Free Bed)        │");
+            System.out.println("│                                          │");
+            System.out.println("│   0. Back to Main Menu                   │");
+            System.out.println("└──────────────────────────────────────────┘");
+            System.out.print("  Enter your choice: ");
+
+            String choice = sc.nextLine().trim();
+
+            switch (choice) {
+                case "1": viewAllBeds(); break;
+                case "2": checkAvailability(sc); break;
+                case "3": bookBed(sc); break;
+                case "4": dischargeBed(sc); break;
+                case "0": return;
+                default: System.out.println("Invalid option! Please try again.");
+            }
+        }
+    }
+
+    private void viewAllBeds() {
+        if (beds.isEmpty()) {
+            System.out.println("\n  No beds in the system.");
+            return;
+        }
+        System.out.println("\n╔══════════════════════════════════════════╗");
+        System.out.println("║            ALL BEDS (" + beds.size() + ")                  ║");
+        System.out.println("╚══════════════════════════════════════════╝");
+        for (Bed b : beds) {
+            b.display();
+        }
+    }
+
+    private void checkAvailability(Scanner sc) {
+        System.out.println("\n  Ward Types: General, ICU, Private, Semi-Private");
+        System.out.print("  Enter ward type (or press Enter for all): ");
+        String ward = sc.nextLine().trim();
+
+        int available = 0;
+        int total = 0;
+
+        System.out.println();
+
+        for (Bed b : beds) {
+            if (ward.isEmpty() || b.getWardType().equalsIgnoreCase(ward)) {
+                total++;
+                if (!b.isOccupied()) {
+                    available++;
+                }
+            }
+        }
+
+        if (total == 0) {
+            System.out.println("  No beds found for ward: " + ward);
+            return;
+        }
+
+        String wardName = ward.isEmpty() ? "All Wards" : ward;
+        System.out.println("  ┌───────────────────────────────────┐");
+        System.out.println("  │ Ward: " + wardName);
+        System.out.println("  │ Total Beds: " + total);
+        System.out.println("  │ Available:  " + available);
+        System.out.println("  │ Occupied:   " + (total - available));
+        System.out.println("  └───────────────────────────────────┘");
+
+        // Show available beds
+        if (available > 0) {
+            System.out.println("\n  Available Beds:");
+            for (Bed b : beds) {
+                if (ward.isEmpty() || b.getWardType().equalsIgnoreCase(ward)) {
+                    if (!b.isOccupied()) {
+                        b.display();
+                    }
+                }
+            }
+        }
+    }
+
+    private void bookBed(Scanner sc) {
+        try {
+            System.out.print("  Patient ID: ");
+            String patientId = sc.nextLine().trim();
+
+            Patient patient = findPatient(patientId);
+            if (patient == null) {
+                System.out.println("  Patient ID " + patientId + " not found!");
+                return;
+            }
+
+            // Check if patient already has a bed
+            for (Bed b : beds) {
+                if (b.isOccupied() && b.getPatientId().equals(patientId)) {
+                    System.out.println("  Patient " + patient.getName() + " already has a bed: " + b.getId()
+                            + " (" + b.getWardType() + ")");
+                    return;
+                }
+            }
+
+            System.out.println("  Patient: " + patient.getName() + " | Disease: " + patient.getDisease());
+            System.out.println("\n  Select Ward Type:");
+            System.out.println("    1. General       (Stay: " + GENERAL_STAY + " days)");
+            System.out.println("    2. ICU           (Stay: " + ICU_STAY + " days)");
+            System.out.println("    3. Private       (Stay: " + PRIVATE_STAY + " days)");
+            System.out.println("    4. Semi-Private  (Stay: " + SEMI_PRIVATE_STAY + " days)");
+            System.out.print("  Choose ward: ");
+            String wardChoice = sc.nextLine().trim();
+
+            String wardType;
+            int stayDays;
+            switch (wardChoice) {
+                case "1": wardType = "General"; stayDays = GENERAL_STAY; break;
+                case "2": wardType = "ICU"; stayDays = ICU_STAY; break;
+                case "3": wardType = "Private"; stayDays = PRIVATE_STAY; break;
+                case "4": wardType = "Semi-Private"; stayDays = SEMI_PRIVATE_STAY; break;
+                default:
+                    System.out.println("  Invalid ward selection!");
+                    return;
+            }
+
+            // Find first available bed in the selected ward
+            Bed availableBed = null;
+            for (Bed b : beds) {
+                if (b.getWardType().equals(wardType) && !b.isOccupied()) {
+                    availableBed = b;
+                    break;
+                }
+            }
+
+            if (availableBed == null) {
+                System.out.println("  No available beds in " + wardType + " ward!");
+                return;
+            }
+
+            System.out.print("  Admit Date (e.g. 2026-03-26): ");
+            String admitDate = sc.nextLine().trim();
+
+            // Calculate discharge date by adding stayDays
+            String dischargeDate = calculateDischargeDate(admitDate, stayDays);
+
+            availableBed.book(patientId, admitDate, dischargeDate);
+            storage.saveBeds(beds);
+
+            System.out.println("\n  Bed booked successfully!");
+            System.out.println("  Bed ID: " + availableBed.getId());
+            System.out.println("  Ward: " + wardType);
+            System.out.println("  Patient: " + patient.getName());
+            System.out.println("  Admit Date: " + admitDate);
+            System.out.println("  Expected Discharge: " + dischargeDate + " (" + stayDays + " days)");
+
+        } catch (Exception e) {
+            System.out.println("  Booking error: " + e.getMessage());
+        }
+    }
+
+    private void dischargeBed(Scanner sc) {
+        System.out.print("  Enter Bed ID to discharge: ");
+        String bedId = sc.nextLine().trim();
+
+        for (Bed b : beds) {
+            if (b.getId().equalsIgnoreCase(bedId)) {
+                if (!b.isOccupied()) {
+                    System.out.println("  Bed " + bedId + " is already available.");
+                    return;
+                }
+
+                String patientId = b.getPatientId();
+                Patient patient = findPatient(patientId);
+                String patientName = (patient != null) ? patient.getName() : patientId;
+
+                b.discharge();
+                storage.saveBeds(beds);
+                System.out.println("  Patient " + patientName + " discharged from Bed " + bedId + ".");
+                System.out.println("  Bed " + bedId + " is now AVAILABLE.");
+                return;
+            }
+        }
+        System.out.println("  Bed ID " + bedId + " not found!");
+    }
+
+    // Simple date calculation: adds days to a date string (YYYY-MM-DD format)
+    private String calculateDischargeDate(String admitDate, int days) {
+        try {
+            String[] parts = admitDate.split("-");
+            int year = Integer.parseInt(parts[0]);
+            int month = Integer.parseInt(parts[1]);
+            int day = Integer.parseInt(parts[2]);
+
+            // Days in each month
+            int[] daysInMonth = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+            // Check for leap year
+            if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) {
+                daysInMonth[2] = 29;
+            }
+
+            day = day + days;
+            while (day > daysInMonth[month]) {
+                day = day - daysInMonth[month];
+                month++;
+                if (month > 12) {
+                    month = 1;
+                    year++;
+                    // Recalculate leap year for new year
+                    if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) {
+                        daysInMonth[2] = 29;
+                    } else {
+                        daysInMonth[2] = 28;
+                    }
+                }
+            }
+
+            return String.format("%04d-%02d-%02d", year, month, day);
+        } catch (Exception e) {
+            return admitDate + " + " + days + " days";
         }
     }
 }

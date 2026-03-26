@@ -8,6 +8,7 @@ public class FileStorageManager {
     private static final String PATIENTS_FILE = "patients.txt";
     private static final String DOCTORS_FILE = "doctors.txt";
     private static final String APPOINTMENTS_FILE = "appointments.txt";
+    private static final String BEDS_FILE = "beds.txt";
 
     public void savePatients(List<Patient> patients) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(PATIENTS_FILE))) {
@@ -37,6 +38,18 @@ public class FileStorageManager {
             }
         } catch (IOException e) {
             System.err.println("Save appointments failed: " + e.getMessage());
+        }
+    }
+
+    public void saveBeds(List<Bed> beds) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(BEDS_FILE))) {
+            for (Bed b : beds) {
+                String status = b.isOccupied() ? "Occupied" : "Available";
+                writer.println(b.getId() + "|" + b.getWardType() + "|" + status + "|"
+                        + b.getPatientId() + "|" + b.getAdmitDate() + "|" + b.getDischargeDate());
+            }
+        } catch (IOException e) {
+            System.err.println("Save beds failed: " + e.getMessage());
         }
     }
 
@@ -88,5 +101,22 @@ public class FileStorageManager {
             System.err.println("Load appointments failed: " + e.getMessage());
         }
         return appointments;
+    }
+
+    public List<Bed> loadBeds() {
+        List<Bed> beds = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(BEDS_FILE))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split("\\|");
+                if (parts.length == 6) {
+                    boolean occupied = parts[2].equals("Occupied");
+                    beds.add(new Bed(parts[0], parts[1], occupied, parts[3], parts[4], parts[5]));
+                }
+            }
+        } catch (Exception e){
+            System.err.println("Load beds failed: " + e.getMessage());
+        }
+        return beds;
     }
 }

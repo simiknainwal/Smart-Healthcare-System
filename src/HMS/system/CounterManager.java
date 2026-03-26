@@ -7,6 +7,7 @@ public class CounterManager {
     private static int patientCounter = 0;
     private static int doctorCounter = 0;
     private static int appointmentCounter = 0;
+    private static int bedCounter = 0;
 
     static {
         loadCounters();
@@ -28,11 +29,14 @@ public class CounterManager {
                         case "APPOINTMENT":
                             appointmentCounter = Integer.parseInt(parts[1]);
                             break;
+                        case "BED":
+                            bedCounter = Integer.parseInt(parts[1]);
+                            break;
                     }
                 }
             }
-            System.out.println("Counters loaded: PAT=" + patientCounter + ", DOC=" + doctorCounter + ", APP="
-                    + appointmentCounter);
+            System.out.println("Counters loaded: PAT=" + patientCounter + ", DOC=" + doctorCounter
+                    + ", APP=" + appointmentCounter + ", BED=" + bedCounter);
         } catch (Exception e) {
             System.out.println("No existing counters file - starting fresh");
         }
@@ -43,6 +47,7 @@ public class CounterManager {
             writer.println("PATIENT=" + patientCounter);
             writer.println("DOCTOR=" + doctorCounter);
             writer.println("APPOINTMENT=" + appointmentCounter);
+            writer.println("BED=" + bedCounter);
             System.out.println("Counters saved");
         } catch (IOException e) {
             System.err.println("Counter save failed: " + e.getMessage());
@@ -59,6 +64,10 @@ public class CounterManager {
 
     public static String getNextAppointmentId() {
         return String.format("APP%03d", ++appointmentCounter);
+    }
+
+    public static String getNextBedId() {
+        return String.format("BED%03d", ++bedCounter);
     }
 
     public static void saveAll() {
