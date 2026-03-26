@@ -402,8 +402,35 @@ public class Hospital {
         try {
             System.out.print("  Patient ID: ");
             String pId = sc.nextLine().trim();
-            System.out.print("  Doctor ID: ");
+
+            Patient patient = findPatient(pId);
+            if (patient == null) {
+                System.out.println("  Patient ID " + pId + " not found!");
+                return;
+            }
+
+            System.out.println("  Patient: " + patient.getName() + " | Disease: " + patient.getDisease());
+
+            // Try to suggest a matching doctor
+            Doctor suggested = DoctorDirectory.suggestDoctor(patient.getDisease(), doctors);
+            String defaultDoctorId = "";
+
+            if (suggested != null) {
+                defaultDoctorId = suggested.getId();
+                System.out.println("  Suggested Doctor: " + suggested.getName()
+                        + " [" + suggested.getId() + "] (" + suggested.getSpecialization() + ")");
+                System.out.print("  Doctor ID [" + defaultDoctorId + "]: ");
+            } else {
+                System.out.println("  No matching doctor found for \"" + patient.getDisease() + "\".");
+                viewDoctors();
+                System.out.print("  Doctor ID: ");
+            }
+
             String dId = sc.nextLine().trim();
+            if (dId.isEmpty() && !defaultDoctorId.isEmpty()) {
+                dId = defaultDoctorId;
+            }
+
             System.out.print("  Date (e.g. 2026-03-26): ");
             String date = sc.nextLine().trim();
             scheduleAppointment(pId, dId, date);

@@ -1,4 +1,5 @@
 package HMS.system;
+
 import java.io.*;
 
 public class CounterManager {
@@ -18,13 +19,20 @@ public class CounterManager {
                 String[] parts = line.split("=");
                 if (parts.length == 2) {
                     switch (parts[0]) {
-                        case "PATIENT": patientCounter = Integer.parseInt(parts[1]); break;
-                        case "DOCTOR": doctorCounter = Integer.parseInt(parts[1]); break;
-                        case "APPOINTMENT": appointmentCounter = Integer.parseInt(parts[1]); break;
+                        case "PATIENT":
+                            patientCounter = Integer.parseInt(parts[1]);
+                            break;
+                        case "DOCTOR":
+                            doctorCounter = Integer.parseInt(parts[1]);
+                            break;
+                        case "APPOINTMENT":
+                            appointmentCounter = Integer.parseInt(parts[1]);
+                            break;
                     }
                 }
             }
-            System.out.println("✓ Counters loaded: PAT=" + patientCounter + ", DOC=" + doctorCounter + ", APP=" + appointmentCounter);
+            System.out.println("Counters loaded: PAT=" + patientCounter + ", DOC=" + doctorCounter + ", APP="
+                    + appointmentCounter);
         } catch (Exception e) {
             System.out.println("No existing counters file - starting fresh");
         }
@@ -35,9 +43,9 @@ public class CounterManager {
             writer.println("PATIENT=" + patientCounter);
             writer.println("DOCTOR=" + doctorCounter);
             writer.println("APPOINTMENT=" + appointmentCounter);
-            System.out.println("✓ Counters saved");
+            System.out.println("Counters saved");
         } catch (IOException e) {
-            System.err.println("✗ Counter save failed: " + e.getMessage());
+            System.err.println("Counter save failed: " + e.getMessage());
         }
     }
 
