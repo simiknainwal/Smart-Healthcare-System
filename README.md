@@ -1,4 +1,4 @@
-##HospiCare — Hospital Management System
+## HospiCare — Hospital Management System
 
 A console-based Hospital Management System built in Java. Manages patients, doctors, appointments, and bed allocations with file-based persistent storage.
 
