@@ -64,6 +64,7 @@ public class AppointmentManager {
             System.out.println("├──────────────────────────────────────────┤");
             System.out.println("│   1. Schedule Appointment                │");
             System.out.println("│   2. View All Appointments               │");
+            System.out.println("│   3. Update Appointment Status           │");
             System.out.println("│                                          │");
             System.out.println("│   0. Back to Main Menu                   │");
             System.out.println("└──────────────────────────────────────────┘");
@@ -74,6 +75,7 @@ public class AppointmentManager {
             switch (choice) {
                 case "1": inputAppointment(sc); break;
                 case "2": viewAppointments(); break;
+                case "3": updateAppointmentStatus(sc); break;
                 case "0": return;
                 default: System.out.println("Invalid option! Please try again.");
             }
@@ -113,11 +115,63 @@ public class AppointmentManager {
                 dId = defaultDoctorId;
             }
 
+            // Resolve doctor to get canonical ID
+            Doctor doctor = doctorManager.findDoctor(dId);
+            if (doctor == null) {
+                System.out.println("  Doctor ID " + dId + " not found!");
+                return;
+            }
+
             System.out.print("  Date (e.g. 2026-03-26): ");
             String date = sc.nextLine().trim();
-            scheduleAppointment(pId, dId, date);
+            scheduleAppointment(patient.getId(), doctor.getId(), date);
         } catch (Exception e) {
             System.out.println("  Appointment error: " + e.getMessage());
         }
+    }
+
+    private void updateAppointmentStatus(Scanner sc) {
+        if (appointments.isEmpty()) {
+            System.out.println("\n  No appointments to update.");
+            return;
+        }
+
+        System.out.print("  Enter Appointment ID: ");
+        String appId = sc.nextLine().trim();
+
+        Appointment target = null;
+        for (Appointment a : appointments) {
+            if (a.getId().equalsIgnoreCase(appId)) {
+                target = a;
+                break;
+            }
+        }
+
+        if (target == null) {
+            System.out.println("  Appointment ID " + appId + " not found!");
+            return;
+        }
+
+        System.out.println("  Current Status: " + target.getStatus());
+        System.out.println("\n  Select New Status:");
+        System.out.println("    1. Scheduled");
+        System.out.println("    2. Done");
+        System.out.println("    3. Cancelled");
+        System.out.print("  Choose: ");
+        String statusChoice = sc.nextLine().trim();
+
+        String newStatus;
+        switch (statusChoice) {
+            case "1": newStatus = "Scheduled"; break;
+            case "2": newStatus = "Done"; break;
+            case "3": newStatus = "Cancelled"; break;
+            default:
+                System.out.println("  Invalid status choice!");
+                return;
+        }
+
+        target.setStatus(newStatus);
+        storage.saveAppointments(appointments);
+        System.out.println("  Appointment " + target.getId() + " status updated to: " + newStatus);
     }
 }

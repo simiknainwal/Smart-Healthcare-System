@@ -108,7 +108,7 @@ public class FileStorageManager {
         try (BufferedReader reader = new BufferedReader(new FileReader(BEDS_FILE))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                String[] parts = line.split("\\|");
+                String[] parts = line.split("\\|", -1);
                 if (parts.length == 6) {
                     boolean occupied = parts[2].equals("Occupied");
                     beds.add(new Bed(parts[0], parts[1], occupied, parts[3], parts[4], parts[5]));

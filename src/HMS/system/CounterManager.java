@@ -55,19 +55,27 @@ public class CounterManager {
     }
 
     public static String getNextPatientId() {
-        return String.format("PAT%03d", ++patientCounter);
+        String id = String.format("PAT%03d", ++patientCounter);
+        saveCounters();
+        return id;
     }
 
     public static String getNextDoctorId() {
-        return String.format("DOC%03d", ++doctorCounter);
+        String id = String.format("DOC%03d", ++doctorCounter);
+        saveCounters();
+        return id;
     }
 
     public static String getNextAppointmentId() {
-        return String.format("APP%03d", ++appointmentCounter);
+        String id = String.format("APP%03d", ++appointmentCounter);
+        saveCounters();
+        return id;
     }
 
     public static String getNextBedId() {
-        return String.format("BED%03d", ++bedCounter);
+        String id = String.format("BED%03d", ++bedCounter);
+        saveCounters();
+        return id;
     }
 
     public static void saveAll() {

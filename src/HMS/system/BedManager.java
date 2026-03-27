@@ -32,6 +32,7 @@ public class BedManager {
             System.out.println("│   2. Check Availability by Ward          │");
             System.out.println("│   3. Book a Bed                          │");
             System.out.println("│   4. Discharge Patient (Free Bed)        │");
+            System.out.println("│   5. Add New Bed                         │");
             System.out.println("│                                          │");
             System.out.println("│   0. Back to Main Menu                   │");
             System.out.println("└──────────────────────────────────────────┘");
@@ -44,6 +45,7 @@ public class BedManager {
                 case "2": checkAvailability(sc); break;
                 case "3": bookBed(sc); break;
                 case "4": dischargeBed(sc); break;
+                case "5": addBed(sc); break;
                 case "0": return;
                 default: System.out.println("Invalid option! Please try again.");
             }
@@ -171,7 +173,7 @@ public class BedManager {
             // Calculate discharge date by adding stayDays
             String dischargeDate = calculateDischargeDate(admitDate, stayDays);
 
-            availableBed.book(patientId, admitDate, dischargeDate);
+            availableBed.book(patient.getId(), admitDate, dischargeDate);
             storage.saveBeds(beds);
 
             System.out.println("\n  Bed booked successfully!");
@@ -247,5 +249,36 @@ public class BedManager {
         } catch (Exception e) {
             return admitDate + " + " + days + " days";
         }
+    }
+
+    private void addBed(Scanner sc) {
+        System.out.println("\n  Select Ward Type for new bed:");
+        System.out.println("    1. General");
+        System.out.println("    2. ICU");
+        System.out.println("    3. Private");
+        System.out.println("    4. Semi-Private");
+        System.out.print("  Choose ward: ");
+        String wardChoice = sc.nextLine().trim();
+
+        String wardType;
+        switch (wardChoice) {
+            case "1": wardType = "General"; break;
+            case "2": wardType = "ICU"; break;
+            case "3": wardType = "Private"; break;
+            case "4": wardType = "Semi-Private"; break;
+            default:
+                System.out.println("  Invalid ward selection!");
+                return;
+        }
+
+        String bedId = CounterManager.getNextBedId();
+        Bed newBed = new Bed(bedId, wardType);
+        beds.add(newBed);
+        storage.saveBeds(beds);
+
+        System.out.println("\n  New bed added successfully!");
+        System.out.println("  Bed ID: " + bedId);
+        System.out.println("  Ward: " + wardType);
+        System.out.println("  Status: AVAILABLE");
     }
 }
