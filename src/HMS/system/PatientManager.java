@@ -1,5 +1,6 @@
 package HMS.system;
 
+import HMS.model.Appointment;
 import HMS.model.Patient;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -41,17 +42,33 @@ public class PatientManager {
         }
     }
 
-    public boolean removePatient(String id) {
-        Patient p = findPatient(id);
-        if (p == null) {
-            System.out.println("Patient with ID " + id + " not found!");
+
+public boolean removePatient(String id) 
+{
+    Patient p = findPatient(id);
+    if (p == null) 
+    {
+        System.out.println("Patient with ID " + id + " not found!");
+        return false;
+    }
+    // check appointments
+    FileStorageManager tempStorage = storage;
+    ArrayList<Appointment> list = new ArrayList<>(tempStorage.loadAppointments());
+
+    for (Appointment a : list) 
+    {
+        if (a.getPatientId().equalsIgnoreCase(id)) 
+        {
+            System.out.println("Cannot delete patient. Appointment exists.");
             return false;
         }
-        patients.remove(p);
-        storage.savePatients(patients);
-        System.out.println("Patient " + p.getName() + " (ID: " + id + ") removed successfully.");
-        return true;
     }
+
+    patients.remove(p);
+    storage.savePatients(patients);
+    System.out.println("Patient " + p.getName() + " removed successfully.");
+    return true;
+}
 
     // ==================== MENU ====================
 
