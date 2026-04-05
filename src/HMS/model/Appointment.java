@@ -8,6 +8,7 @@ public class Appointment {
     private final String doctorId;
     private String date;
     private String status;
+    private String priority;
 
     public Appointment(String id, String patientId, String doctorId, String date) {
         this.id = id;
@@ -15,6 +16,7 @@ public class Appointment {
         this.doctorId = doctorId;
         this.date = date;
         this.status = "Scheduled";
+        this.priority = "Normal";
     }
 
     public static Appointment create(String patientId, String doctorId, String date) {
@@ -32,10 +34,20 @@ public class Appointment {
         this.status = status;
     }
 
+    public String getPriority()
+    {
+        return priority;
+    }
+
+    public void setPriority(String priority)
+    {
+        this.priority = priority;
+    }
+    
     public void display() {
         System.out.println("Appointment ID: " + id);
         System.out.println("Patient ID: " + patientId + ", Doctor ID: " + doctorId);
-        System.out.println("Date: " + date + ", Status: " + status);
+        System.out.println("Date: " + date + ", Status: " + status + ", Priority: " + priority);
         System.out.println("---");
     }
 }
