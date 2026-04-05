@@ -1,6 +1,8 @@
 package HMS.system;
 
 import HMS.model.*;
+
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -118,6 +120,7 @@ public class AppointmentManager {
             System.out.println("│   3. Update Appointment Status           │");
             System.out.println("│   4. View Patient Appointments           │");
             System.out.println("│   5. View Doctor Appointments            │");
+            System.out.println("│   6. Generate Report                     │");
             System.out.println("│   0. Back to Main Menu                   │");
             System.out.println("└──────────────────────────────────────────┘");
             System.out.print("  Enter your choice: ");
@@ -138,6 +141,9 @@ public class AppointmentManager {
                             System.out.print("Enter Doctor ID: ");
                             String did = sc.nextLine();
                             viewAppointmentsByDoctor(did);
+                            break;
+                case "6":
+                            generateReport();
                             break;
                 case "0": return;
                 default: System.out.println("Invalid option! Please try again.");
@@ -192,8 +198,20 @@ public class AppointmentManager {
                 System.out.println("Invalid date format! Use YYYY-MM-DD");
                 return;
             }
-            scheduleAppointment(patient.getId(), doctor.getId(), date);
-        } catch (Exception e) {
+
+            Appointment app = Appointment.create(patient.getId(), doctor.getId(), date);
+            System.out.print("Is it emergency? (yes/no): ");
+            String ans = sc.nextLine();
+            if (ans.equalsIgnoreCase("yes"))
+            {
+                app.setPriority("Emergency");
+            }
+            appointments.add(app);
+            storage.saveAppointments(appointments);
+            System.out.println("Appointment scheduled successfully! (ID: " + app.getId() + ")");
+
+        } 
+        catch (Exception e) {
             System.out.println("  Appointment error: " + e.getMessage());
         }
     }
@@ -241,5 +259,39 @@ public class AppointmentManager {
         target.setStatus(newStatus);
         storage.saveAppointments(appointments);
         System.out.println("  Appointment " + target.getId() + " status updated to: " + newStatus);
+    }
+
+    public void generateReport()
+    {
+        try
+        {
+            PrintWriter writer = new PrintWriter("report.txt");
+
+            writer.println("HOSPITAL REPORT");
+            writer.println("------------------------");
+
+            writer.println("Total Appointments: " + appointments.size());
+            writer.println();
+
+            for (Appointment a : appointments)
+            {
+                writer.println("ID: " + a.getId());
+                writer.println("Patient: " + a.getPatientId());
+                writer.println("Doctor: " + a.getDoctorId());
+                writer.println("Date: " + a.getDate());
+                writer.println("Status: " + a.getStatus());
+                writer.println("Priority: " + a.getPriority());
+                writer.println("------------------------");
+            }
+
+            writer.close();
+
+            System.out.println("Report generated successfully! (report.txt)");
+
+        }
+        catch (Exception e)
+        {
+            System.out.println("Error generating report");
+        }
     }
 }
