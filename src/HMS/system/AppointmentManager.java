@@ -36,6 +36,18 @@ public class AppointmentManager {
             return;
         }
 
+        for (Appointment a : appointments) 
+        {
+            if (a.getDoctorId().equalsIgnoreCase(doctorId)) 
+            {
+                if (a.getDate().equals(date)) 
+                    {
+                        System.out.println("Doctor already has an appointment on this date!");
+                        return;
+                    }
+            }
+        }
+
         Appointment app = Appointment.create(patientId, doctorId, date);
         appointments.add(app);
         storage.saveAppointments(appointments);
@@ -55,6 +67,45 @@ public class AppointmentManager {
         }
     }
 
+    
+    public void viewAppointmentsByPatient(String patientId) 
+    {
+    boolean found = false;
+    for (Appointment a : appointments) 
+    {
+        if (a.getPatientId().equalsIgnoreCase(patientId)) 
+        {
+            a.display();
+            found = true;
+        }
+    }
+    if (!found) 
+    {
+        System.out.println("No appointments found for this patient.");
+    }
+    }
+
+    
+    public void viewAppointmentsByDoctor(String doctorId) 
+    {     
+    boolean found = false;
+    for (Appointment a : appointments) 
+    {
+        if (a.getDoctorId().equalsIgnoreCase(doctorId)) 
+        {
+            a.display();
+            found = true;
+        }
+    }
+
+    if (!found) 
+    {
+        System.out.println("No appointments found for this doctor.");
+    }
+}
+
+
+
     // ==================== MENU ====================
 
     public void showMenu(Scanner sc) {
@@ -65,7 +116,8 @@ public class AppointmentManager {
             System.out.println("│   1. Schedule Appointment                │");
             System.out.println("│   2. View All Appointments               │");
             System.out.println("│   3. Update Appointment Status           │");
-            System.out.println("│                                          │");
+            System.out.println("│   4. View Patient Appointments           │");
+            System.out.println("│   5. View Doctor Appointments            │");
             System.out.println("│   0. Back to Main Menu                   │");
             System.out.println("└──────────────────────────────────────────┘");
             System.out.print("  Enter your choice: ");
@@ -76,6 +128,17 @@ public class AppointmentManager {
                 case "1": inputAppointment(sc); break;
                 case "2": viewAppointments(); break;
                 case "3": updateAppointmentStatus(sc); break;
+                case "4":
+                            System.out.print("Enter Patient ID: ");
+                            String pid = sc.nextLine();
+                            viewAppointmentsByPatient(pid);
+                            break;
+
+                case "5":
+                            System.out.print("Enter Doctor ID: ");
+                            String did = sc.nextLine();
+                            viewAppointmentsByDoctor(did);
+                            break;
                 case "0": return;
                 default: System.out.println("Invalid option! Please try again.");
             }
@@ -124,6 +187,11 @@ public class AppointmentManager {
 
             System.out.print("  Date (e.g. 2026-03-26): ");
             String date = sc.nextLine().trim();
+            if (!date.matches("\\d{4}-\\d{2}-\\d{2}")) 
+            {
+                System.out.println("Invalid date format! Use YYYY-MM-DD");
+                return;
+            }
             scheduleAppointment(patient.getId(), doctor.getId(), date);
         } catch (Exception e) {
             System.out.println("  Appointment error: " + e.getMessage());
