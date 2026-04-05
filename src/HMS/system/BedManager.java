@@ -182,6 +182,26 @@ public class BedManager {
             System.out.println("  Patient: " + patient.getName());
             System.out.println("  Admit Date: " + admitDate);
             System.out.println("  Expected Discharge: " + dischargeDate + " (" + stayDays + " days)");
+            int bill = 0;
+
+            if (wardType.equalsIgnoreCase("ICU")) 
+            {
+                bill = stayDays * 5000;
+            } 
+            else if (wardType.equalsIgnoreCase("Private")) 
+            {
+                bill = stayDays * 3000;
+            } 
+            else if (wardType.equalsIgnoreCase("Semi-Private")) 
+            {
+                bill = stayDays * 2000;
+            } 
+            else 
+            {
+                bill = stayDays * 1000;
+            }
+
+            System.out.println("Estimated Bill: Rs. " + bill);
 
         } catch (Exception e) {
             System.out.println("  Booking error: " + e.getMessage());
