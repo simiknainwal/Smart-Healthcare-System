@@ -1,4 +1,4 @@
-package HMS.system;
+package HMS.utils;
 
 import HMS.model.Doctor;
 import java.util.ArrayList;

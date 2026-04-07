@@ -1,15 +1,17 @@
-package HMS.system;
+package HMS;
 
 import HMS.model.*;
+import HMS.service.*;
+import HMS.utils.FileStorageManager;
 import java.util.*;
 
-public class Hospital {
+public class HospitalApp {
     private final PatientManager patientManager;
     private final DoctorManager doctorManager;
     private final AppointmentManager appointmentManager;
     private final BedManager bedManager;
 
-    public Hospital() {
+    public HospitalApp() {
         FileStorageManager storage = new FileStorageManager();
 
         ArrayList<Patient> patients = new ArrayList<>(storage.loadPatients());

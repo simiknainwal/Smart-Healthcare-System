@@ -1,6 +1,6 @@
 package HMS.model;
 
-import HMS.system.CounterManager;
+import HMS.utils.CounterManager;
 
 public class Patient extends Person {
 

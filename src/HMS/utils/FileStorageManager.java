@@ -1,4 +1,4 @@
-package HMS.system;
+package HMS.utils;
 
 import HMS.model.*;
 import java.io.*;
@@ -63,7 +63,7 @@ public class FileStorageManager {
                     patients.add(new Patient(parts[0], parts[1], Integer.parseInt(parts[2]), parts[3]));
                 }
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             System.err.println("Load patients failed: " + e.getMessage());
         }
         return patients;
@@ -79,7 +79,7 @@ public class FileStorageManager {
                     doctors.add(new Doctor(parts[0], parts[1], Integer.parseInt(parts[2]), parts[3]));
                 }
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             System.err.println("Load doctors failed: " + e.getMessage());
         }
         return doctors;
@@ -97,7 +97,7 @@ public class FileStorageManager {
                     appointments.add(a);
                 }
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             System.err.println("Load appointments failed: " + e.getMessage());
         }
         return appointments;
@@ -114,7 +114,7 @@ public class FileStorageManager {
                     beds.add(new Bed(parts[0], parts[1], occupied, parts[3], parts[4], parts[5]));
                 }
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             System.err.println("Load beds failed: " + e.getMessage());
         }
         return beds;

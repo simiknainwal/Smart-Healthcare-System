@@ -1,40 +1,34 @@
-package HMS.system;
+package HMS.service;
 
 import HMS.model.Doctor;
+import HMS.utils.FileStorageManager;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class DoctorManager {
-
-    // variables
     private final ArrayList<Doctor> doctors;
     private final FileStorageManager storage;
 
-    // constructor
     public DoctorManager(ArrayList<Doctor> doctors, FileStorageManager storage) {
         this.doctors = doctors;
         this.storage = storage;
     }
 
-    // _________OPERATIONS_________
+    // ==================== OPERATIONS ====================
 
-    // add doctor
     public void addDoctor(Doctor d) {
         doctors.add(d);
         storage.saveDoctors(doctors);
         System.out.println("Doctor added successfully! (ID: " + d.getId() + ")");
     }
 
-    // find doctor
     public Doctor findDoctor(String id) {
         for (Doctor d : doctors) {
-            if (d.getId().equalsIgnoreCase(id))
-                return d;
+            if (d.getId().equalsIgnoreCase(id)) return d;
         }
         return null;
     }
 
-    // view doctors
     public void viewDoctors() {
         if (doctors.isEmpty()) {
             System.out.println("\n  No doctors registered yet.");
@@ -48,7 +42,6 @@ public class DoctorManager {
         }
     }
 
-    // remove doctor
     public boolean removeDoctor(String id) {
         Doctor d = findDoctor(id);
         if (d == null) {
@@ -61,7 +54,8 @@ public class DoctorManager {
         return true;
     }
 
-    // show menu
+    // ==================== MENU ====================
+
     public void showMenu(Scanner sc) {
         while (true) {
             System.out.println("\n┌──────────────────────────────────────────┐");
@@ -80,30 +74,17 @@ public class DoctorManager {
             String choice = sc.nextLine().trim();
 
             switch (choice) {
-                case "1":
-                    inputDoctor(sc);
-                    break;
-                case "2":
-                    viewDoctors();
-                    break;
-                case "3":
-                    searchDoctor(sc);
-                    break;
-                case "4":
-                    updateDoctor(sc);
-                    break;
-                case "5":
-                    inputRemoveDoctor(sc);
-                    break;
-                case "0":
-                    return;
-                default:
-                    System.out.println("Invalid option! Please try again.");
+                case "1": inputDoctor(sc); break;
+                case "2": viewDoctors(); break;
+                case "3": searchDoctor(sc); break;
+                case "4": updateDoctor(sc); break;
+                case "5": inputRemoveDoctor(sc); break;
+                case "0": return;
+                default: System.out.println("Invalid option! Please try again.");
             }
         }
     }
 
-    // input doctor
     private void inputDoctor(Scanner sc) {
         try {
             System.out.print("  Name: ");
@@ -119,7 +100,6 @@ public class DoctorManager {
         }
     }
 
-    // search doctor
     private void searchDoctor(Scanner sc) {
         System.out.print("  Enter Doctor ID: ");
         String id = sc.nextLine().trim();
@@ -132,7 +112,6 @@ public class DoctorManager {
         }
     }
 
-    // update doctor
     private void updateDoctor(Scanner sc) {
         System.out.print("  Enter Doctor ID to update: ");
         String id = sc.nextLine().trim();
@@ -172,7 +151,6 @@ public class DoctorManager {
         }
     }
 
-    // input remove doctor
     private void inputRemoveDoctor(Scanner sc) {
         System.out.print("  Enter Doctor ID to remove: ");
         String id = sc.nextLine().trim();

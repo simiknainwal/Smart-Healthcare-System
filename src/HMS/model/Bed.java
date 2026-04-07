@@ -1,6 +1,6 @@
 package HMS.model;
 
-import HMS.system.DateUtil;
+import HMS.utils.DateUtil;
 
 public class Bed {
 

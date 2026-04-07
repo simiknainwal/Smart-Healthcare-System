@@ -1,7 +1,7 @@
 package HMS.model;
 
-import HMS.system.CounterManager;
-import HMS.system.DateUtil;
+import HMS.utils.CounterManager;
+import HMS.utils.DateUtil;
 
 public class Appointment {
 
