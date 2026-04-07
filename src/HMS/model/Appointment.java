@@ -1,6 +1,7 @@
 package HMS.model;
 
 import HMS.system.CounterManager;
+import HMS.system.DateUtil;
 
 public class Appointment {
     private final String id;
@@ -28,6 +29,10 @@ public class Appointment {
     public String getDate() { return date; }
     public String getStatus() { return status; }
 
+    public void setDate(String date) {
+        this.date = date;
+    }
+
     public void setStatus(String status) {
         this.status = status;
     }
@@ -35,7 +40,7 @@ public class Appointment {
     public void display() {
         System.out.println("Appointment ID: " + id);
         System.out.println("Patient ID: " + patientId + ", Doctor ID: " + doctorId);
-        System.out.println("Date: " + date + ", Status: " + status);
+        System.out.println("Date: " + DateUtil.display(date) + ", Status: " + status);
         System.out.println("---");
     }
 }

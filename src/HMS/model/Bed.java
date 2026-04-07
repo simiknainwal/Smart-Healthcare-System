@@ -1,5 +1,7 @@
 package HMS.model;
 
+import HMS.system.DateUtil;
+
 public class Bed {
     private final String id;
     private String wardType;
@@ -55,7 +57,8 @@ public class Bed {
         System.out.print("  " + id + " | " + wardType);
         if (occupied) {
             System.out.println(" | OCCUPIED | Patient: " + patientId
-                    + " | Admit: " + admitDate + " | Discharge: " + dischargeDate);
+                    + " | Admit: " + DateUtil.display(admitDate)
+                    + " | Discharge: " + DateUtil.display(dischargeDate));
         } else {
             System.out.println(" | AVAILABLE");
         }

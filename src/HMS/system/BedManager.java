@@ -167,11 +167,26 @@ public class BedManager {
                 return;
             }
 
-            System.out.print("  Admit Date (e.g. 2026-03-26): ");
-            String admitDate = sc.nextLine().trim();
+            // ── Admit date (default: today) ──────────────────────────────────
+            String todayStr = DateUtil.todayFormatted();
+            System.out.print("  Admit Date [" + todayStr + "]: ");
+            String admitInput = sc.nextLine().trim();
 
-            // Calculate discharge date by adding stayDays
-            String dischargeDate = calculateDischargeDate(admitDate, stayDays);
+            String admitDate;
+            if (admitInput.isEmpty()) {
+                admitDate = todayStr;
+            } else {
+                try {
+                    DateUtil.parse(admitInput); // validate
+                    admitDate = admitInput;
+                } catch (IllegalArgumentException e) {
+                    System.out.println("  " + e.getMessage());
+                    return;
+                }
+            }
+
+            // Calculate discharge date using java.time
+            String dischargeDate = DateUtil.addDays(admitDate, stayDays);
 
             availableBed.book(patient.getId(), admitDate, dischargeDate);
             storage.saveBeds(beds);
@@ -180,8 +195,8 @@ public class BedManager {
             System.out.println("  Bed ID: " + availableBed.getId());
             System.out.println("  Ward: " + wardType);
             System.out.println("  Patient: " + patient.getName());
-            System.out.println("  Admit Date: " + admitDate);
-            System.out.println("  Expected Discharge: " + dischargeDate + " (" + stayDays + " days)");
+            System.out.println("  Admit Date: " + DateUtil.display(admitDate));
+            System.out.println("  Expected Discharge: " + DateUtil.display(dischargeDate) + " (" + stayDays + " days)");
 
         } catch (Exception e) {
             System.out.println("  Booking error: " + e.getMessage());
@@ -211,44 +226,6 @@ public class BedManager {
             }
         }
         System.out.println("  Bed ID " + bedId + " not found!");
-    }
-
-    // Simple date calculation: adds days to a date string (YYYY-MM-DD format)
-    private String calculateDischargeDate(String admitDate, int days) {
-        try {
-            String[] parts = admitDate.split("-");
-            int year = Integer.parseInt(parts[0]);
-            int month = Integer.parseInt(parts[1]);
-            int day = Integer.parseInt(parts[2]);
-
-            // Days in each month
-            int[] daysInMonth = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
-            // Check for leap year
-            if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) {
-                daysInMonth[2] = 29;
-            }
-
-            day = day + days;
-            while (day > daysInMonth[month]) {
-                day = day - daysInMonth[month];
-                month++;
-                if (month > 12) {
-                    month = 1;
-                    year++;
-                    // Recalculate leap year for new year
-                    if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) {
-                        daysInMonth[2] = 29;
-                    } else {
-                        daysInMonth[2] = 28;
-                    }
-                }
-            }
-
-            return String.format("%04d-%02d-%02d", year, month, day);
-        } catch (Exception e) {
-            return admitDate + " + " + days + " days";
-        }
     }
 
     private void addBed(Scanner sc) {

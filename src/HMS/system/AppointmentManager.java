@@ -65,6 +65,7 @@ public class AppointmentManager {
             System.out.println("│   1. Schedule Appointment                │");
             System.out.println("│   2. View All Appointments               │");
             System.out.println("│   3. Update Appointment Status           │");
+            System.out.println("│   4. Reschedule Appointment              │");
             System.out.println("│                                          │");
             System.out.println("│   0. Back to Main Menu                   │");
             System.out.println("└──────────────────────────────────────────┘");
@@ -76,6 +77,7 @@ public class AppointmentManager {
                 case "1": inputAppointment(sc); break;
                 case "2": viewAppointments(); break;
                 case "3": updateAppointmentStatus(sc); break;
+                case "4": rescheduleAppointment(sc); break;
                 case "0": return;
                 default: System.out.println("Invalid option! Please try again.");
             }
@@ -122,8 +124,21 @@ public class AppointmentManager {
                 return;
             }
 
-            System.out.print("  Date (e.g. 2026-03-26): ");
-            String date = sc.nextLine().trim();
+            // ── Appointment date (default: today) ────────────────────────────
+            System.out.print("  Date [" + DateUtil.todayFormatted() + "]: ");
+            String dateInput = sc.nextLine().trim();
+            String date;
+            if (dateInput.isEmpty()) {
+                date = DateUtil.todayFormatted();
+            } else {
+                try {
+                    DateUtil.parse(dateInput); // validate
+                    date = dateInput;
+                } catch (IllegalArgumentException e) {
+                    System.out.println("  " + e.getMessage());
+                    return;
+                }
+            }
             scheduleAppointment(patient.getId(), doctor.getId(), date);
         } catch (Exception e) {
             System.out.println("  Appointment error: " + e.getMessage());
@@ -173,5 +188,53 @@ public class AppointmentManager {
         target.setStatus(newStatus);
         storage.saveAppointments(appointments);
         System.out.println("  Appointment " + target.getId() + " status updated to: " + newStatus);
+    }
+
+    private void rescheduleAppointment(Scanner sc) {
+        if (appointments.isEmpty()) {
+            System.out.println("\n  No appointments to reschedule.");
+            return;
+        }
+
+        System.out.print("  Enter Appointment ID: ");
+        String appId = sc.nextLine().trim();
+
+        Appointment target = null;
+        for (Appointment a : appointments) {
+            if (a.getId().equalsIgnoreCase(appId)) {
+                target = a;
+                break;
+            }
+        }
+
+        if (target == null) {
+            System.out.println("  Appointment ID " + appId + " not found!");
+            return;
+        }
+
+        System.out.println("  Current Date: " + DateUtil.display(target.getDate())
+                + "  |  Status: " + target.getStatus());
+        System.out.print("  New Date [" + DateUtil.todayFormatted() + "]: ");
+        String newDateInput = sc.nextLine().trim();
+
+        String newDate;
+        if (newDateInput.isEmpty()) {
+            newDate = DateUtil.todayFormatted();
+        } else {
+            try {
+                DateUtil.parse(newDateInput); // validate
+                newDate = newDateInput;
+            } catch (IllegalArgumentException e) {
+                System.out.println("  " + e.getMessage());
+                return;
+            }
+        }
+
+        target.setDate(newDate);
+        // Reset status to Scheduled on reschedule
+        target.setStatus("Scheduled");
+        storage.saveAppointments(appointments);
+        System.out.println("  Appointment " + target.getId() + " rescheduled to: "
+                + DateUtil.display(newDate) + " (Status reset to Scheduled)");
     }
 }
