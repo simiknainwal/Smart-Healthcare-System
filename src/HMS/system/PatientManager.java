@@ -5,29 +5,36 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class PatientManager {
+
+    // variables
     private final ArrayList<Patient> patients;
     private final FileStorageManager storage;
 
+    // constructor
     public PatientManager(ArrayList<Patient> patients, FileStorageManager storage) {
         this.patients = patients;
         this.storage = storage;
     }
 
-    // ==================== OPERATIONS ====================
+    // _________OPERATIONS_________
 
+    // add patient
     public void addPatient(Patient p) {
         patients.add(p);
         storage.savePatients(patients);
         System.out.println("Patient added successfully! (ID: " + p.getId() + ")");
     }
 
+    // find patient
     public Patient findPatient(String id) {
         for (Patient p : patients) {
-            if (p.getId().equalsIgnoreCase(id)) return p;
+            if (p.getId().equalsIgnoreCase(id))
+                return p;
         }
         return null;
     }
 
+    // view patients
     public void viewPatients() {
         if (patients.isEmpty()) {
             System.out.println("\n  No patients registered yet.");
@@ -41,6 +48,7 @@ public class PatientManager {
         }
     }
 
+    // remove patient
     public boolean removePatient(String id) {
         Patient p = findPatient(id);
         if (p == null) {
@@ -53,8 +61,7 @@ public class PatientManager {
         return true;
     }
 
-    // ==================== MENU ====================
-
+    // show menu
     public void showMenu(Scanner sc) {
         while (true) {
             System.out.println("\n┌──────────────────────────────────────────┐");
@@ -73,17 +80,30 @@ public class PatientManager {
             String choice = sc.nextLine().trim();
 
             switch (choice) {
-                case "1": inputPatient(sc); break;
-                case "2": viewPatients(); break;
-                case "3": searchPatient(sc); break;
-                case "4": updatePatient(sc); break;
-                case "5": inputRemovePatient(sc); break;
-                case "0": return;
-                default: System.out.println("Invalid option! Please try again.");
+                case "1":
+                    inputPatient(sc);
+                    break;
+                case "2":
+                    viewPatients();
+                    break;
+                case "3":
+                    searchPatient(sc);
+                    break;
+                case "4":
+                    updatePatient(sc);
+                    break;
+                case "5":
+                    inputRemovePatient(sc);
+                    break;
+                case "0":
+                    return;
+                default:
+                    System.out.println("Invalid option! Please try again.");
             }
         }
     }
 
+    // input patient
     private void inputPatient(Scanner sc) {
         try {
             System.out.print("  Name: ");
@@ -99,6 +119,7 @@ public class PatientManager {
         }
     }
 
+    // search patient
     private void searchPatient(Scanner sc) {
         System.out.print("  Enter Patient ID: ");
         String id = sc.nextLine().trim();
@@ -111,6 +132,7 @@ public class PatientManager {
         }
     }
 
+    // update patient
     private void updatePatient(Scanner sc) {
         System.out.print("  Enter Patient ID to update: ");
         String id = sc.nextLine().trim();
@@ -150,6 +172,7 @@ public class PatientManager {
         }
     }
 
+    // input remove patient
     private void inputRemovePatient(Scanner sc) {
         System.out.print("  Enter Patient ID to remove: ");
         String id = sc.nextLine().trim();

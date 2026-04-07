@@ -4,12 +4,15 @@ import HMS.system.CounterManager;
 import HMS.system.DateUtil;
 
 public class Appointment {
+
+    // variables
     private final String id;
     private final String patientId;
     private final String doctorId;
     private String date;
     private String status;
 
+    // constructor
     public Appointment(String id, String patientId, String doctorId, String date) {
         this.id = id;
         this.patientId = patientId;
@@ -18,17 +21,34 @@ public class Appointment {
         this.status = "Scheduled";
     }
 
+    // create appointment
     public static Appointment create(String patientId, String doctorId, String date) {
         String autoId = CounterManager.getNextAppointmentId();
         return new Appointment(autoId, patientId, doctorId, date);
     }
 
-    public String getId() { return id; }
-    public String getPatientId() { return patientId; }
-    public String getDoctorId() { return doctorId; }
-    public String getDate() { return date; }
-    public String getStatus() { return status; }
+    // getters
+    public String getId() {
+        return id;
+    }
 
+    public String getPatientId() {
+        return patientId;
+    }
+
+    public String getDoctorId() {
+        return doctorId;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    // setters
     public void setDate(String date) {
         this.date = date;
     }
@@ -37,6 +57,7 @@ public class Appointment {
         this.status = status;
     }
 
+    // display appointment info
     public void display() {
         System.out.println("Appointment ID: " + id);
         System.out.println("Patient ID: " + patientId + ", Doctor ID: " + doctorId);

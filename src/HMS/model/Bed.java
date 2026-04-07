@@ -3,6 +3,8 @@ package HMS.model;
 import HMS.system.DateUtil;
 
 public class Bed {
+
+    // variables
     private final String id;
     private String wardType;
     private boolean occupied;
@@ -10,6 +12,7 @@ public class Bed {
     private String admitDate;
     private String dischargeDate;
 
+    // constructor
     public Bed(String id, String wardType) {
         this.id = id;
         this.wardType = wardType;
@@ -19,8 +22,9 @@ public class Bed {
         this.dischargeDate = "";
     }
 
+    // constructor
     public Bed(String id, String wardType, boolean occupied, String patientId,
-               String admitDate, String dischargeDate) {
+            String admitDate, String dischargeDate) {
         this.id = id;
         this.wardType = wardType;
         this.occupied = occupied;
@@ -30,12 +34,29 @@ public class Bed {
     }
 
     // Getters
-    public String getId() { return id; }
-    public String getWardType() { return wardType; }
-    public boolean isOccupied() { return occupied; }
-    public String getPatientId() { return patientId; }
-    public String getAdmitDate() { return admitDate; }
-    public String getDischargeDate() { return dischargeDate; }
+    public String getId() {
+        return id;
+    }
+
+    public String getWardType() {
+        return wardType;
+    }
+
+    public boolean isOccupied() {
+        return occupied;
+    }
+
+    public String getPatientId() {
+        return patientId;
+    }
+
+    public String getAdmitDate() {
+        return admitDate;
+    }
+
+    public String getDischargeDate() {
+        return dischargeDate;
+    }
 
     // Book this bed for a patient
     public void book(String patientId, String admitDate, String dischargeDate) {
@@ -53,6 +74,7 @@ public class Bed {
         this.dischargeDate = "";
     }
 
+    // display bed info
     public void display() {
         System.out.print("  " + id + " | " + wardType);
         if (occupied) {

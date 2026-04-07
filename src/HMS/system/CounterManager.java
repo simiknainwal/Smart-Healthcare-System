@@ -35,10 +35,9 @@ public class CounterManager {
                     }
                 }
             }
-            System.out.println("Counters loaded: PAT=" + patientCounter + ", DOC=" + doctorCounter
-                    + ", APP=" + appointmentCounter + ", BED=" + bedCounter);
+
         } catch (Exception e) {
-            System.out.println("No existing counters file - starting fresh");
+            // counters.txt not found — starting fresh with defaults
         }
     }
 
@@ -48,7 +47,6 @@ public class CounterManager {
             writer.println("DOCTOR=" + doctorCounter);
             writer.println("APPOINTMENT=" + appointmentCounter);
             writer.println("BED=" + bedCounter);
-            System.out.println("Counters saved");
         } catch (IOException e) {
             System.err.println("Counter save failed: " + e.getMessage());
         }
@@ -76,9 +74,5 @@ public class CounterManager {
         String id = String.format("BED%03d", ++bedCounter);
         saveCounters();
         return id;
-    }
-
-    public static void saveAll() {
-        saveCounters();
     }
 }

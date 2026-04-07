@@ -78,7 +78,7 @@ public class DoctorDirectory {
     }
 
     // Find the specialization for a given disease
-    public static String getSpecialization(String disease) {
+    private static String getSpecialization(String disease) {
         if (disease == null) return null;
         return diseaseToSpecialization.get(disease.toLowerCase().trim());
     }

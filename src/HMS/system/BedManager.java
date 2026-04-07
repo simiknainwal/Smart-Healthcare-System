@@ -5,24 +5,28 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class BedManager {
+
+    // variables
     private final ArrayList<Bed> beds;
     private final PatientManager patientManager;
     private final FileStorageManager storage;
 
-    // Fixed stay duration (in days) for each ward type
+    // Fixed stay duration for each ward type
     private static final int GENERAL_STAY = 7;
     private static final int ICU_STAY = 3;
     private static final int PRIVATE_STAY = 10;
     private static final int SEMI_PRIVATE_STAY = 5;
 
+    // constructor
     public BedManager(ArrayList<Bed> beds, PatientManager patientManager, FileStorageManager storage) {
         this.beds = beds;
         this.patientManager = patientManager;
         this.storage = storage;
     }
 
-    // ==================== MENU ====================
+    // _________OPERATIONS_________
 
+    // show menu
     public void showMenu(Scanner sc) {
         while (true) {
             System.out.println("\n┌──────────────────────────────────────────┐");
@@ -41,19 +45,30 @@ public class BedManager {
             String choice = sc.nextLine().trim();
 
             switch (choice) {
-                case "1": viewAllBeds(); break;
-                case "2": checkAvailability(sc); break;
-                case "3": bookBed(sc); break;
-                case "4": dischargeBed(sc); break;
-                case "5": addBed(sc); break;
-                case "0": return;
-                default: System.out.println("Invalid option! Please try again.");
+                case "1":
+                    viewAllBeds();
+                    break;
+                case "2":
+                    checkAvailability(sc);
+                    break;
+                case "3":
+                    bookBed(sc);
+                    break;
+                case "4":
+                    dischargeBed(sc);
+                    break;
+                case "5":
+                    addBed(sc);
+                    break;
+                case "0":
+                    return;
+                default:
+                    System.out.println("Invalid option! Please try again.");
             }
         }
     }
 
-    // ==================== OPERATIONS ====================
-
+    // view all beds
     private void viewAllBeds() {
         if (beds.isEmpty()) {
             System.out.println("\n  No beds in the system.");
@@ -67,6 +82,7 @@ public class BedManager {
         }
     }
 
+    // check availability
     private void checkAvailability(Scanner sc) {
         System.out.println("\n  Ward Types: General, ICU, Private, Semi-Private");
         System.out.print("  Enter ward type (or press Enter for all): ");
@@ -112,6 +128,7 @@ public class BedManager {
         }
     }
 
+    // book bed
     private void bookBed(Scanner sc) {
         try {
             System.out.print("  Patient ID: ");
@@ -144,10 +161,22 @@ public class BedManager {
             String wardType;
             int stayDays;
             switch (wardChoice) {
-                case "1": wardType = "General"; stayDays = GENERAL_STAY; break;
-                case "2": wardType = "ICU"; stayDays = ICU_STAY; break;
-                case "3": wardType = "Private"; stayDays = PRIVATE_STAY; break;
-                case "4": wardType = "Semi-Private"; stayDays = SEMI_PRIVATE_STAY; break;
+                case "1":
+                    wardType = "General";
+                    stayDays = GENERAL_STAY;
+                    break;
+                case "2":
+                    wardType = "ICU";
+                    stayDays = ICU_STAY;
+                    break;
+                case "3":
+                    wardType = "Private";
+                    stayDays = PRIVATE_STAY;
+                    break;
+                case "4":
+                    wardType = "Semi-Private";
+                    stayDays = SEMI_PRIVATE_STAY;
+                    break;
                 default:
                     System.out.println("  Invalid ward selection!");
                     return;
@@ -203,6 +232,7 @@ public class BedManager {
         }
     }
 
+    // discharge bed
     private void dischargeBed(Scanner sc) {
         System.out.print("  Enter Bed ID to discharge: ");
         String bedId = sc.nextLine().trim();
@@ -228,6 +258,7 @@ public class BedManager {
         System.out.println("  Bed ID " + bedId + " not found!");
     }
 
+    // add bed
     private void addBed(Scanner sc) {
         System.out.println("\n  Select Ward Type for new bed:");
         System.out.println("    1. General");
@@ -239,10 +270,18 @@ public class BedManager {
 
         String wardType;
         switch (wardChoice) {
-            case "1": wardType = "General"; break;
-            case "2": wardType = "ICU"; break;
-            case "3": wardType = "Private"; break;
-            case "4": wardType = "Semi-Private"; break;
+            case "1":
+                wardType = "General";
+                break;
+            case "2":
+                wardType = "ICU";
+                break;
+            case "3":
+                wardType = "Private";
+                break;
+            case "4":
+                wardType = "Semi-Private";
+                break;
             default:
                 System.out.println("  Invalid ward selection!");
                 return;

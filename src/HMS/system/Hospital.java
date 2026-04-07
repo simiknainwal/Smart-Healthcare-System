@@ -35,7 +35,6 @@ public class Hospital {
                 case "3": appointmentManager.showMenu(sc); break;
                 case "4": bedManager.showMenu(sc); break;
                 case "0":
-                    CounterManager.saveAll();
                     System.out.println("\nThank you for using HospiCare. Goodbye!");
                     return;
                 default:
