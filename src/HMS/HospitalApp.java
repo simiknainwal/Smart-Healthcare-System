@@ -25,17 +25,38 @@ public class HospitalApp {
         bedManager = new BedManager(beds, patientManager, storage);
     }
 
-    public void run() {
+    public void runGUI() {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            try {
+                javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception e) {
+                // ignore
+            }
+            HMS.ui.Dashboard dashboard = new HMS.ui.Dashboard(patientManager, doctorManager, appointmentManager,
+                    bedManager);
+            dashboard.setVisible(true);
+        });
+    }
+
+    public void runCLI() {
         Scanner sc = new Scanner(System.in);
         while (true) {
             printMainMenu();
             String choice = sc.nextLine().trim();
 
             switch (choice) {
-                case "1": patientManager.showMenu(sc); break;
-                case "2": doctorManager.showMenu(sc); break;
-                case "3": appointmentManager.showMenu(sc); break;
-                case "4": bedManager.showMenu(sc); break;
+                case "1":
+                    patientManager.showMenu(sc);
+                    break;
+                case "2":
+                    doctorManager.showMenu(sc);
+                    break;
+                case "3":
+                    appointmentManager.showMenu(sc);
+                    break;
+                case "4":
+                    bedManager.showMenu(sc);
+                    break;
                 case "0":
                     System.out.println("\nThank you for using HospiCare. Goodbye!");
                     return;

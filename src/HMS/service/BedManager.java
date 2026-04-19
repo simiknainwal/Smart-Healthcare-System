@@ -27,6 +27,14 @@ public class BedManager {
         this.storage = storage;
     }
 
+    public ArrayList<Bed> getBeds() {
+        return beds;
+    }
+
+    public void updateStorage() {
+        storage.saveBeds(beds);
+    }
+
     // _________OPERATIONS_________
 
     // show menu

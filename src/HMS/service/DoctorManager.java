@@ -14,6 +14,14 @@ public class DoctorManager {
         this.storage = storage;
     }
 
+    public ArrayList<Doctor> getDoctors() {
+        return doctors;
+    }
+
+    public void updateStorage() {
+        storage.saveDoctors(doctors);
+    }
+
     // ==================== OPERATIONS ====================
 
     public void addDoctor(Doctor d) {

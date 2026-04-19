@@ -14,6 +14,14 @@ public class PatientManager {
         this.storage = storage;
     }
 
+    public ArrayList<Patient> getPatients() {
+        return patients;
+    }
+
+    public void updateStorage() {
+        storage.savePatients(patients);
+    }
+
     // ==================== OPERATIONS ====================
 
     public void addPatient(Patient p) {

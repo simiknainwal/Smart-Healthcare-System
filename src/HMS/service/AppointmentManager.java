@@ -15,13 +15,21 @@ public class AppointmentManager {
     private final FileStorageManager storage;
 
     public AppointmentManager(ArrayList<Appointment> appointments, ArrayList<Doctor> doctors,
-                              PatientManager patientManager, DoctorManager doctorManager,
-                              FileStorageManager storage) {
+            PatientManager patientManager, DoctorManager doctorManager,
+            FileStorageManager storage) {
         this.appointments = appointments;
         this.doctors = doctors;
         this.patientManager = patientManager;
         this.doctorManager = doctorManager;
         this.storage = storage;
+    }
+
+    public ArrayList<Appointment> getAppointments() {
+        return appointments;
+    }
+
+    public void updateStorage() {
+        storage.saveAppointments(appointments);
     }
 
     // ==================== OPERATIONS ====================
@@ -77,12 +85,22 @@ public class AppointmentManager {
             String choice = sc.nextLine().trim();
 
             switch (choice) {
-                case "1": inputAppointment(sc); break;
-                case "2": viewAppointments(); break;
-                case "3": updateAppointmentStatus(sc); break;
-                case "4": rescheduleAppointment(sc); break;
-                case "0": return;
-                default: System.out.println("Invalid option! Please try again.");
+                case "1":
+                    inputAppointment(sc);
+                    break;
+                case "2":
+                    viewAppointments();
+                    break;
+                case "3":
+                    updateAppointmentStatus(sc);
+                    break;
+                case "4":
+                    rescheduleAppointment(sc);
+                    break;
+                case "0":
+                    return;
+                default:
+                    System.out.println("Invalid option! Please try again.");
             }
         }
     }
@@ -108,7 +126,7 @@ public class AppointmentManager {
                 defaultDoctorId = suggested.getId();
                 System.out.println("  Suggested Doctor: " + suggested.getName()
                         + " [" + suggested.getId() + "] (" + suggested.getSpecialization() + ")");
-                System.out.print("  Doctor ID [" + defaultDoctorId + "]: ");
+                System.out.print(" Doctor ID [" + defaultDoctorId + "]: ");
             } else {
                 System.out.println("  No matching doctor found for \"" + patient.getDisease() + "\".");
                 doctorManager.viewDoctors();
@@ -180,9 +198,15 @@ public class AppointmentManager {
 
         String newStatus;
         switch (statusChoice) {
-            case "1": newStatus = "Scheduled"; break;
-            case "2": newStatus = "Done"; break;
-            case "3": newStatus = "Cancelled"; break;
+            case "1":
+                newStatus = "Scheduled";
+                break;
+            case "2":
+                newStatus = "Done";
+                break;
+            case "3":
+                newStatus = "Cancelled";
+                break;
             default:
                 System.out.println("  Invalid status choice!");
                 return;

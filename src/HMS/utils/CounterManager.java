@@ -37,7 +37,7 @@ public class CounterManager {
             }
 
         } catch (Exception e) {
-            // counters.txt not found — starting fresh with defaults
+            System.err.println("Counter file not found, starting fresh with defaults");
         }
     }
 
