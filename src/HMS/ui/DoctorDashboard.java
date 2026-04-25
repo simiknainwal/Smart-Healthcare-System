@@ -22,6 +22,8 @@ public class DoctorDashboard extends JFrame {
 
     private CardLayout cardLayout;
     private JPanel mainContentPanel;
+    private DefaultTableModel appointmentTableModel;
+    private JTable appointmentTable;
 
     public DoctorDashboard(User user, DoctorManager doctorManager, 
                            AppointmentManager appointmentManager, PatientManager patientManager,
@@ -179,33 +181,79 @@ public class DoctorDashboard extends JFrame {
         panel.setBackground(UIUtils.MAIN_BG);
         panel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        JLabel lblTitle = new JLabel("My Appointments");
+        JLabel lblTitle = new JLabel("My Scheduled Appointments");
         lblTitle.setFont(UIUtils.TITLE_FONT);
         lblTitle.setForeground(UIUtils.TEXT_PRIMARY);
         panel.add(lblTitle, BorderLayout.NORTH);
 
         String[] cols = {"Appt ID", "Patient ID", "Date", "Status"};
-        DefaultTableModel model = new DefaultTableModel(cols, 0) {
+        appointmentTableModel = new DefaultTableModel(cols, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         };
-        JTable table = new JTable(model);
-        UIUtils.styleTable(table);
+        appointmentTable = new JTable(appointmentTableModel);
+        UIUtils.styleTable(appointmentTable);
 
-        if (doctor != null) {
-            List<Appointment> myAppts = appointmentManager.getAppointments().stream()
-                .filter(a -> a.getDoctorId().equals(doctor.getId()))
-                .collect(Collectors.toList());
+        refreshAppointments();
 
-            for (Appointment a : myAppts) {
-                model.addRow(new Object[]{a.getId(), a.getPatientId(), a.getDate(), a.getStatus()});
-            }
-        }
-
-        JScrollPane scroll = new JScrollPane(table);
+        JScrollPane scroll = new JScrollPane(appointmentTable);
         scroll.setBorder(BorderFactory.createLineBorder(new Color(223, 230, 233)));
         panel.add(scroll, BorderLayout.CENTER);
 
+        // Buttons
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        bottomPanel.setBackground(UIUtils.MAIN_BG);
+        
+        JButton btnDone = new JButton("Mark as Done");
+        UIUtils.styleButton(btnDone, true);
+        btnDone.setBackground(new Color(46, 204, 113)); // Green
+        btnDone.addActionListener(e -> updateSelectedAppointmentStatus("Done"));
+
+        JButton btnCancel = new JButton("Cancel Appointment");
+        UIUtils.styleDangerButton(btnCancel);
+        btnCancel.addActionListener(e -> updateSelectedAppointmentStatus("Cancelled"));
+
+        bottomPanel.add(btnDone);
+        bottomPanel.add(btnCancel);
+        panel.add(bottomPanel, BorderLayout.SOUTH);
+
         return panel;
+    }
+
+    private void refreshAppointments() {
+        appointmentTableModel.setRowCount(0);
+        if (doctor != null) {
+            List<Appointment> myAppts = appointmentManager.getAppointments().stream()
+                .filter(a -> a.getDoctorId().equals(doctor.getId()) && a.getStatus().equalsIgnoreCase("Scheduled"))
+                .collect(Collectors.toList());
+
+            for (Appointment a : myAppts) {
+                appointmentTableModel.addRow(new Object[]{a.getId(), a.getPatientId(), a.getDate(), a.getStatus()});
+            }
+        }
+    }
+
+    private void updateSelectedAppointmentStatus(String newStatus) {
+        int row = appointmentTable.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Please select an appointment first.", "Warning", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String apptId = (String) appointmentTableModel.getValueAt(row, 0);
+        Appointment target = null;
+        for (Appointment a : appointmentManager.getAppointments()) {
+            if (a.getId().equals(apptId)) {
+                target = a;
+                break;
+            }
+        }
+
+        if (target != null) {
+            target.setStatus(newStatus);
+            appointmentManager.updateAppointmentInDB(target);
+            JOptionPane.showMessageDialog(this, "Appointment marked as " + newStatus + ".", "Success", JOptionPane.INFORMATION_MESSAGE);
+            refreshAppointments();
+        }
     }
 
     private JPanel createLookupPanel() {

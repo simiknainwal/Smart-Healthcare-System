@@ -14,6 +14,7 @@ public class PatientDashboard extends JFrame {
 
     private final User currentUser;
     private final PatientManager patientManager;
+    private final DoctorManager doctorManager;
     private final AppointmentManager appointmentManager;
     private final BedManager bedManager;
     private final Runnable onLogout;
@@ -22,12 +23,14 @@ public class PatientDashboard extends JFrame {
 
     private CardLayout cardLayout;
     private JPanel mainContentPanel;
+    private DefaultTableModel appointmentTableModel;
 
-    public PatientDashboard(User user, PatientManager patientManager, 
+    public PatientDashboard(User user, PatientManager patientManager, DoctorManager doctorManager, 
                             AppointmentManager appointmentManager, BedManager bedManager,
                             Runnable onLogout) {
         this.currentUser = user;
         this.patientManager = patientManager;
+        this.doctorManager = doctorManager;
         this.appointmentManager = appointmentManager;
         this.bedManager = bedManager;
         this.onLogout = onLogout;
@@ -184,28 +187,147 @@ public class PatientDashboard extends JFrame {
         lblTitle.setForeground(UIUtils.TEXT_PRIMARY);
         panel.add(lblTitle, BorderLayout.NORTH);
 
-        String[] cols = {"Appt ID", "Doctor ID", "Date", "Status"};
-        DefaultTableModel model = new DefaultTableModel(cols, 0) {
+        String[] cols = {"Appt ID", "Doctor ID", "Doctor Name", "Date", "Status"};
+        appointmentTableModel = new DefaultTableModel(cols, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         };
-        JTable table = new JTable(model);
+        JTable table = new JTable(appointmentTableModel);
         UIUtils.styleTable(table);
 
+        refreshAppointments();
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBorder(BorderFactory.createLineBorder(new Color(223, 230, 233)));
+        panel.add(scroll, BorderLayout.CENTER);
+
+        // Add Book Appointment Button
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        bottomPanel.setBackground(UIUtils.MAIN_BG);
+        JButton btnBook = new JButton("Book New Appointment");
+        UIUtils.styleButton(btnBook, true);
+        btnBook.addActionListener(e -> showBookingDialog());
+        bottomPanel.add(btnBook);
+        panel.add(bottomPanel, BorderLayout.SOUTH);
+
+        return panel;
+    }
+
+    private void refreshAppointments() {
+        appointmentTableModel.setRowCount(0);
         if (patient != null) {
             List<Appointment> myAppts = appointmentManager.getAppointments().stream()
                 .filter(a -> a.getPatientId().equals(patient.getId()))
                 .collect(Collectors.toList());
 
             for (Appointment a : myAppts) {
-                model.addRow(new Object[]{a.getId(), a.getDoctorId(), a.getDate(), a.getStatus()});
+                Doctor d = doctorManager.findDoctor(a.getDoctorId());
+                String docName = (d != null) ? d.getName() : "Unknown";
+                appointmentTableModel.addRow(new Object[]{a.getId(), a.getDoctorId(), docName, a.getDate(), a.getStatus()});
             }
         }
+    }
 
-        JScrollPane scroll = new JScrollPane(table);
-        scroll.setBorder(BorderFactory.createLineBorder(new Color(223, 230, 233)));
-        panel.add(scroll, BorderLayout.CENTER);
+    private void showBookingDialog() {
+        JDialog dialog = new JDialog(this, "Book Appointment", true);
+        dialog.setSize(450, 350);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout());
 
-        return panel;
+        JPanel form = new JPanel();
+        form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
+        form.setBorder(new EmptyBorder(20, 30, 20, 30));
+
+        JTextField txtProblem = new JTextField();
+        txtProblem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        
+        JLabel lblSuggested = new JLabel("No doctor selected.");
+        lblSuggested.setForeground(Color.GRAY);
+        
+        JTextField txtDate = new JTextField(HMS.utils.DateUtil.todayFormatted());
+        txtDate.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+
+        JComboBox<String> comboDoctors = new JComboBox<>();
+        comboDoctors.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        comboDoctors.setVisible(false); // only show if suggestion fails
+        
+        for (Doctor d : doctorManager.getDoctors()) {
+            comboDoctors.addItem(d.getId() + " - " + d.getName() + " (" + d.getSpecialization() + ")");
+        }
+
+        JButton btnSuggest = new JButton("Suggest Doctor");
+        UIUtils.styleButton(btnSuggest, false);
+        
+        // Suggestion Logic
+        final Doctor[] selectedDoctor = {null};
+
+        btnSuggest.addActionListener(e -> {
+            String problem = txtProblem.getText().trim();
+            if (problem.isEmpty()) return;
+
+            Doctor suggested = HMS.utils.DoctorDirectory.suggestDoctor(problem, doctorManager.getDoctors());
+            if (suggested != null) {
+                selectedDoctor[0] = suggested;
+                lblSuggested.setText("Suggested: " + suggested.getName() + " (" + suggested.getSpecialization() + ")");
+                lblSuggested.setForeground(new Color(46, 204, 113)); // Green
+                comboDoctors.setVisible(false);
+            } else {
+                lblSuggested.setText("No exact match. Please select from the list below.");
+                lblSuggested.setForeground(Color.RED);
+                comboDoctors.setVisible(true);
+                selectedDoctor[0] = null;
+            }
+        });
+
+        form.add(new JLabel("Describe your problem (e.g. fever, headache):"));
+        form.add(Box.createRigidArea(new Dimension(0, 5)));
+        form.add(txtProblem);
+        form.add(Box.createRigidArea(new Dimension(0, 5)));
+        form.add(btnSuggest);
+        form.add(Box.createRigidArea(new Dimension(0, 15)));
+        form.add(lblSuggested);
+        form.add(Box.createRigidArea(new Dimension(0, 5)));
+        form.add(comboDoctors);
+        form.add(Box.createRigidArea(new Dimension(0, 15)));
+        form.add(new JLabel("Preferred Date (dd/MM/yyyy):"));
+        form.add(Box.createRigidArea(new Dimension(0, 5)));
+        form.add(txtDate);
+
+        JButton btnConfirm = new JButton("Confirm Booking");
+        UIUtils.styleButton(btnConfirm, true);
+        btnConfirm.addActionListener(e -> {
+            Doctor targetDoc = selectedDoctor[0];
+            if (targetDoc == null && comboDoctors.isVisible()) {
+                int idx = comboDoctors.getSelectedIndex();
+                if (idx >= 0) {
+                    targetDoc = doctorManager.getDoctors().get(idx);
+                }
+            }
+
+            if (targetDoc == null) {
+                JOptionPane.showMessageDialog(dialog, "Please select a doctor.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            String date = txtDate.getText().trim();
+            try {
+                HMS.utils.DateUtil.parse(date); // validate
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dialog, "Invalid date format.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            appointmentManager.scheduleAppointment(patient.getId(), targetDoc.getId(), date);
+            JOptionPane.showMessageDialog(dialog, "Appointment booked successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            refreshAppointments();
+            dialog.dispose();
+        });
+
+        JPanel bottom = new JPanel();
+        bottom.add(btnConfirm);
+
+        dialog.add(form, BorderLayout.CENTER);
+        dialog.add(bottom, BorderLayout.SOUTH);
+        dialog.setVisible(true);
     }
 
     private JPanel createBedPanel() {

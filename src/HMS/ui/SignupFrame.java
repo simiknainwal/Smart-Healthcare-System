@@ -21,7 +21,7 @@ public class SignupFrame extends JFrame {
     public SignupFrame(HospitalApp app) {
         this.app = app;
         this.authService = new AuthService();
-        
+
         initFrame();
         initComponents();
     }
@@ -42,7 +42,7 @@ public class SignupFrame extends JFrame {
         headerPanel.setBackground(UIUtils.SIDEBAR_BG);
         headerPanel.setPreferredSize(new Dimension(getWidth(), 80));
         headerPanel.setLayout(new GridBagLayout());
-        
+
         JLabel lblBrand = new JLabel("Create Account");
         lblBrand.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblBrand.setForeground(Color.WHITE);
@@ -58,14 +58,14 @@ public class SignupFrame extends JFrame {
 
         txtUsername = new JTextField();
         txtUsername.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
-        
+
         txtPassword = new JPasswordField();
         txtPassword.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
-        
+
         txtConfirmPassword = new JPasswordField();
         txtConfirmPassword.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
 
-        String[] roles = {"PATIENT", "DOCTOR"};
+        String[] roles = { "PATIENT", "DOCTOR" };
         comboRole = new JComboBox<>(roles);
         comboRole.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
         comboRole.setBackground(Color.WHITE);
@@ -82,8 +82,8 @@ public class SignupFrame extends JFrame {
         formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         formPanel.add(createLabeledField("Role", comboRole));
         formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
-        formPanel.add(createLabeledField("Hospital ID (e.g. P001, D001)", txtLinkedId));
-        
+        formPanel.add(createLabeledField("Hospital ID (e.g. PAT001, DOC001)", txtLinkedId));
+
         formPanel.add(Box.createRigidArea(new Dimension(0, 25)));
 
         JButton btnSubmit = new JButton("Sign Up");
@@ -91,7 +91,7 @@ public class SignupFrame extends JFrame {
         btnSubmit.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         btnSubmit.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnSubmit.addActionListener(e -> attemptSignup());
-        
+
         formPanel.add(btnSubmit);
 
         add(formPanel, BorderLayout.CENTER);
@@ -103,7 +103,7 @@ public class SignupFrame extends JFrame {
 
         JLabel lblHasAccount = new JLabel("Already have an account? ");
         lblHasAccount.setFont(UIUtils.MAIN_FONT);
-        
+
         JButton btnLogin = new JButton("Login");
         btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnLogin.setForeground(UIUtils.ACCENT_COLOR);
@@ -115,7 +115,7 @@ public class SignupFrame extends JFrame {
 
         footerPanel.add(lblHasAccount);
         footerPanel.add(btnLogin);
-        
+
         add(footerPanel, BorderLayout.SOUTH);
     }
 
@@ -129,13 +129,13 @@ public class SignupFrame extends JFrame {
         label.setFont(new Font("Segoe UI", Font.BOLD, 12));
         label.setForeground(UIUtils.TEXT_PRIMARY);
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
+
         field.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         panel.add(label);
         panel.add(Box.createRigidArea(new Dimension(0, 5)));
         panel.add(field);
-        
+
         return panel;
     }
 
@@ -147,23 +147,23 @@ public class SignupFrame extends JFrame {
         String linkedId = txtLinkedId.getText().trim();
 
         if (!pass.equals(confirm)) {
-            JOptionPane.showMessageDialog(this, "Passwords do not match.", 
+            JOptionPane.showMessageDialog(this, "Passwords do not match.",
                     "Validation Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         try {
             authService.signup(username, pass, role, linkedId);
-            
-            JOptionPane.showMessageDialog(this, "Account created successfully! Please login.", 
+
+            JOptionPane.showMessageDialog(this, "Account created successfully! Please login.",
                     "Success", JOptionPane.INFORMATION_MESSAGE);
             backToLogin();
-            
+
         } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), 
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Signup Failed", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "An unexpected error occurred.", 
+            JOptionPane.showMessageDialog(this, "An unexpected error occurred.",
                     "Error", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
         }

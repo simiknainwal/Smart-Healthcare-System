@@ -59,7 +59,7 @@ public class HospitalApp {
                 HMS.ui.DoctorDashboard dashboard = new HMS.ui.DoctorDashboard(user, doctorManager, appointmentManager, patientManager, () -> runGUI());
                 dashboard.setVisible(true);
             } else if (user.getRole().equals("PATIENT")) {
-                HMS.ui.PatientDashboard dashboard = new HMS.ui.PatientDashboard(user, patientManager, appointmentManager, bedManager, () -> runGUI());
+                HMS.ui.PatientDashboard dashboard = new HMS.ui.PatientDashboard(user, patientManager, doctorManager, appointmentManager, bedManager, () -> runGUI());
                 dashboard.setVisible(true);
             }
         });
