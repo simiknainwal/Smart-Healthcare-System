@@ -10,6 +10,7 @@ import java.util.Scanner;
 
 public class AppointmentManager {
     private final ArrayList<Appointment> appointments;
+    // Kept as a direct reference for the CLI doctor-suggestion path (DoctorDirectory.suggestDoctor)
     private final ArrayList<Doctor> doctors;
     private final PatientManager patientManager;
     private final DoctorManager doctorManager;

@@ -9,7 +9,7 @@ import java.time.format.DateTimeParseException;
 //Display format : dd MMM yyyy (e.g. "07 Apr 2026")
 public class DateUtil {
 
-    // Storage format used in .txt files
+    // Storage format used in the SQLite database
     private static final DateTimeFormatter STORAGE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     // Human-friendly display format

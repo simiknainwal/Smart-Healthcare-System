@@ -83,14 +83,14 @@ public class AppointmentPanel extends JPanel {
         JTextField txtDate = new JTextField(15);
         
         // Let's inform the user about the expected date format if possible
-        txtDate.setToolTipText("Format: DD-MM-YYYY");
+        txtDate.setToolTipText("Format: yyyy-MM-dd (e.g. 2026-04-25)");
 
         JPanel panel = new JPanel(new GridLayout(3, 2, 5, 5));
         panel.add(new JLabel("Patient ID:"));
         panel.add(txtPatientId);
         panel.add(new JLabel("Doctor ID:"));
         panel.add(txtDoctorId);
-        panel.add(new JLabel("Date (DD-MM-YYYY):"));
+        panel.add(new JLabel("Date (yyyy-MM-dd):"));
         panel.add(txtDate);
 
         int result = JOptionPane.showConfirmDialog(this, panel, "Schedule Appointment", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
