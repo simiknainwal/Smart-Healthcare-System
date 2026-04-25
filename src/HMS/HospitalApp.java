@@ -44,11 +44,28 @@ public class HospitalApp {
             } catch (Exception e) {
                 // ignore
             }
-            HMS.ui.Dashboard dashboard = new HMS.ui.Dashboard(patientManager, doctorManager, appointmentManager,
-                    bedManager);
-            dashboard.setVisible(true);
+            // Start with Login screen instead of Dashboard
+            new HMS.ui.LoginFrame(this).setVisible(true);
         });
     }
+
+    public void handleLoginSuccess(User user) {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            if (user.getRole().equals("ADMIN")) {
+                HMS.ui.Dashboard dashboard = new HMS.ui.Dashboard(patientManager, doctorManager, appointmentManager,
+                        bedManager, () -> runGUI());
+                dashboard.setVisible(true);
+            } else if (user.getRole().equals("DOCTOR")) {
+                HMS.ui.DoctorDashboard dashboard = new HMS.ui.DoctorDashboard(user, doctorManager, appointmentManager, patientManager, () -> runGUI());
+                dashboard.setVisible(true);
+            } else if (user.getRole().equals("PATIENT")) {
+                HMS.ui.PatientDashboard dashboard = new HMS.ui.PatientDashboard(user, patientManager, appointmentManager, bedManager, () -> runGUI());
+                dashboard.setVisible(true);
+            }
+        });
+    }
+
+
 
     public void runCLI() {
         Scanner sc = new Scanner(System.in);

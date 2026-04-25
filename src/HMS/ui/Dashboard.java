@@ -18,13 +18,16 @@ public class Dashboard extends JFrame {
 
     private CardLayout cardLayout;
     private JPanel mainContentPanel;
+    private final Runnable onLogout;
 
     public Dashboard(PatientManager patientManager, DoctorManager doctorManager,
-                     AppointmentManager appointmentManager, BedManager bedManager) {
+                     AppointmentManager appointmentManager, BedManager bedManager,
+                     Runnable onLogout) {
         this.patientManager = patientManager;
         this.doctorManager = doctorManager;
         this.appointmentManager = appointmentManager;
         this.bedManager = bedManager;
+        this.onLogout = onLogout;
 
         initFrame();
         initComponents();
@@ -77,16 +80,19 @@ public class Dashboard extends JFrame {
         sidebar.add(navPanel, BorderLayout.CENTER);
 
         // Footer Area
-        JButton btnExit = new JButton("Exit");
-        UIUtils.styleSidebarButton(btnExit);
-        btnExit.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
-        btnExit.addActionListener(e -> System.exit(0));
+        JButton btnLogout = new JButton("Logout");
+        UIUtils.styleSidebarButton(btnLogout);
+        btnLogout.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+        btnLogout.addActionListener(e -> {
+            this.dispose();
+            if (onLogout != null) onLogout.run();
+        });
 
         JPanel footerPanel = new JPanel();
         footerPanel.setLayout(new BoxLayout(footerPanel, BoxLayout.Y_AXIS));
         footerPanel.setBackground(UIUtils.SIDEBAR_BG);
         footerPanel.setBorder(new EmptyBorder(20, 0, 20, 0));
-        footerPanel.add(btnExit);
+        footerPanel.add(btnLogout);
         sidebar.add(footerPanel, BorderLayout.SOUTH);
 
         add(sidebar, BorderLayout.WEST);
