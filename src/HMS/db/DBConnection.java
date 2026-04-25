@@ -1,5 +1,6 @@
 package HMS.db;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -16,8 +17,9 @@ import java.sql.Statement;
  */
 public class DBConnection {
 
-    // SQLite connection URL — the file is created automatically if it doesn't exist
-    private static final String URL = "jdbc:sqlite:hospicare.db";
+    // All runtime data files live inside the "data" folder
+    private static final String DATA_DIR = "data";
+    private static final String URL = "jdbc:sqlite:" + DATA_DIR + "/hospicare.db";
 
     /**
      * Returns a new connection to the SQLite database.
@@ -29,6 +31,8 @@ public class DBConnection {
      *   conn.close();
      */
     public static Connection getConnection() throws SQLException {
+        // Ensure the data directory exists before connecting
+        new File(DATA_DIR).mkdirs();
         return DriverManager.getConnection(URL);
     }
 

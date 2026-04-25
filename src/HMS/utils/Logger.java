@@ -1,5 +1,6 @@
 package HMS.utils;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -24,8 +25,8 @@ import java.time.format.DateTimeFormatter;
  */
 public class Logger {
 
-    // The log file — created in the project root folder
-    private static final String LOG_FILE = "log.txt";
+    // The log file — stored inside the "data" folder alongside hospicare.db
+    private static final String LOG_FILE = "data" + File.separator + "log.txt";
 
     // Timestamp format for each log entry
     private static final DateTimeFormatter TIMESTAMP_FMT =

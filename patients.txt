@@ -1,3 +1,0 @@
-PAT002|Ashish Khetwal|20|Cold
-PAT003|Harsh Semwal|20|Chest Pain
-PAT004|Aarav|21|chest pain

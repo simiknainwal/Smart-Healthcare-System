@@ -30,3 +30,9 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### HospiCare ###
+data/
+lib/
+*.txt
+!src/**/*.txt
