@@ -350,30 +350,162 @@ public class PatientDashboard extends JFrame {
             }
         }
 
-        JPanel details = new JPanel();
-        details.setLayout(new BoxLayout(details, BoxLayout.Y_AXIS));
-        details.setBackground(Color.WHITE);
-        details.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(223, 230, 233)),
-                new EmptyBorder(20, 20, 20, 20)
-        ));
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+        centerPanel.setBackground(UIUtils.MAIN_BG);
 
         if (myBed != null) {
+            JPanel details = new JPanel();
+            details.setLayout(new BoxLayout(details, BoxLayout.Y_AXIS));
+            details.setBackground(Color.WHITE);
+            details.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(223, 230, 233)),
+                    new EmptyBorder(20, 20, 20, 20)
+            ));
+
             details.add(createDetailRow("Bed ID:", myBed.getId()));
             details.add(createDetailRow("Ward Type:", myBed.getWardType()));
             details.add(createDetailRow("Admit Date:", HMS.utils.DateUtil.display(myBed.getAdmitDate())));
             details.add(createDetailRow("Discharge Date:", HMS.utils.DateUtil.display(myBed.getDischargeDate())));
+
+            JPanel wrapper = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            wrapper.setBackground(UIUtils.MAIN_BG);
+            wrapper.add(details);
+            centerPanel.add(wrapper);
         } else {
-            JLabel lblNoBed = new JLabel("You are not currently admitted to any bed.");
-            lblNoBed.setFont(UIUtils.MAIN_FONT);
-            details.add(lblNoBed);
+            // Patient does not have a bed, show availability and booking option
+            JPanel infoPanel = new JPanel(new GridLayout(2, 2, 15, 15));
+            infoPanel.setBackground(UIUtils.MAIN_BG);
+            infoPanel.setMaximumSize(new Dimension(600, 200));
+
+            int gen = 0, icu = 0, priv = 0, semi = 0;
+            for (Bed b : bedManager.getBeds()) {
+                if (!b.isOccupied()) {
+                    switch (b.getWardType()) {
+                        case "General": gen++; break;
+                        case "ICU": icu++; break;
+                        case "Private": priv++; break;
+                        case "Semi-Private": semi++; break;
+                    }
+                }
+            }
+
+            infoPanel.add(createAvailabilityCard("General Ward", gen, new Color(52, 152, 219)));
+            infoPanel.add(createAvailabilityCard("ICU", icu, new Color(231, 76, 60)));
+            infoPanel.add(createAvailabilityCard("Private", priv, new Color(155, 89, 182)));
+            infoPanel.add(createAvailabilityCard("Semi-Private", semi, new Color(241, 196, 15)));
+
+            centerPanel.add(infoPanel);
+            centerPanel.add(Box.createRigidArea(new Dimension(0, 30)));
+
+            JButton btnBookBed = new JButton("Book a Bed");
+            UIUtils.styleButton(btnBookBed, true);
+            btnBookBed.setAlignmentX(Component.CENTER_ALIGNMENT);
+            btnBookBed.addActionListener(e -> showBedBookingDialog());
+            
+            centerPanel.add(btnBookBed);
         }
 
-        JPanel wrapper = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        wrapper.setBackground(UIUtils.MAIN_BG);
-        wrapper.add(details);
-        
-        panel.add(wrapper, BorderLayout.CENTER);
+        panel.add(centerPanel, BorderLayout.CENTER);
         return panel;
+    }
+
+    private JPanel createAvailabilityCard(String wardType, int availableCount, Color accentColor) {
+        JPanel card = new JPanel(new BorderLayout(5, 5));
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(223, 230, 233)),
+                new EmptyBorder(15, 15, 15, 15)
+        ));
+
+        JLabel title = new JLabel(wardType, SwingConstants.CENTER);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        title.setForeground(UIUtils.TEXT_PRIMARY);
+
+        JLabel count = new JLabel(availableCount + " available", SwingConstants.CENTER);
+        count.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        count.setForeground(availableCount > 0 ? accentColor : Color.GRAY);
+
+        card.add(title, BorderLayout.NORTH);
+        card.add(count, BorderLayout.CENTER);
+        return card;
+    }
+
+    private void showBedBookingDialog() {
+        JDialog dialog = new JDialog(this, "Book a Bed", true);
+        dialog.setSize(400, 300);
+        dialog.setLocationRelativeTo(this);
+        dialog.setLayout(new BorderLayout());
+
+        JPanel form = new JPanel();
+        form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
+        form.setBorder(new EmptyBorder(20, 30, 20, 30));
+
+        JTextField txtPatientId = new JTextField(patient != null ? patient.getId() : "");
+        txtPatientId.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        txtPatientId.setEditable(false); // Prefilled and locked
+
+        String[] wardTypes = {"General", "ICU", "Private", "Semi-Private"};
+        JComboBox<String> comboWard = new JComboBox<>(wardTypes);
+        comboWard.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+
+        form.add(new JLabel("Patient ID:"));
+        form.add(Box.createRigidArea(new Dimension(0, 5)));
+        form.add(txtPatientId);
+        form.add(Box.createRigidArea(new Dimension(0, 15)));
+        form.add(new JLabel("Select Ward Type:"));
+        form.add(Box.createRigidArea(new Dimension(0, 5)));
+        form.add(comboWard);
+
+        JButton btnConfirm = new JButton("Confirm Booking");
+        UIUtils.styleButton(btnConfirm, true);
+        btnConfirm.addActionListener(e -> {
+            String selectedWard = (String) comboWard.getSelectedItem();
+            
+            // Find first available bed in selected ward
+            Bed availableBed = null;
+            for (Bed b : bedManager.getBeds()) {
+                if (b.getWardType().equals(selectedWard) && !b.isOccupied()) {
+                    availableBed = b;
+                    break;
+                }
+            }
+
+            if (availableBed == null) {
+                JOptionPane.showMessageDialog(dialog, "No available beds in the " + selectedWard + " ward.", "Unavailable", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Calculate stay days
+            int stayDays = 0;
+            switch (selectedWard) {
+                case "General": stayDays = 7; break;
+                case "ICU": stayDays = 3; break;
+                case "Private": stayDays = 10; break;
+                case "Semi-Private": stayDays = 5; break;
+            }
+
+            String admitDate = HMS.utils.DateUtil.todayFormatted();
+            String dischargeDate = HMS.utils.DateUtil.addDays(admitDate, stayDays);
+
+            availableBed.book(patient.getId(), admitDate, dischargeDate);
+            bedManager.updateBedInDB(availableBed);
+
+            JOptionPane.showMessageDialog(dialog, "Bed booked successfully!\nBed ID: " + availableBed.getId() + "\nExpected Discharge: " + HMS.utils.DateUtil.display(dischargeDate), "Success", JOptionPane.INFORMATION_MESSAGE);
+            dialog.dispose();
+            
+            // Refresh Bed Panel
+            cardLayout.show(mainContentPanel, "PROFILE"); // temporarily switch
+            mainContentPanel.remove(2); // Remove old bed panel
+            mainContentPanel.add(createBedPanel(), "BED", 2); // Re-add updated bed panel
+            cardLayout.show(mainContentPanel, "BED");
+        });
+
+        JPanel bottom = new JPanel();
+        bottom.add(btnConfirm);
+
+        dialog.add(form, BorderLayout.CENTER);
+        dialog.add(bottom, BorderLayout.SOUTH);
+        dialog.setVisible(true);
     }
 }
