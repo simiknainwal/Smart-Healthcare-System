@@ -148,7 +148,7 @@ public class PatientPanel extends JPanel {
                 p.setAge(age);
                 p.setDisease(disease);
 
-                patientManager.updateStorage();
+                patientManager.updatePatientInDB(p);
                 refreshData();
                 JOptionPane.showMessageDialog(this, "Patient updated successfully!");
             } catch (NumberFormatException ex) {

@@ -1,9 +1,10 @@
 package HMS.service;
 
+import HMS.db.AppointmentDAO;
 import HMS.model.*;
 import HMS.utils.DateUtil;
 import HMS.utils.DoctorDirectory;
-import HMS.utils.FileStorageManager;
+import HMS.utils.Logger;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -12,24 +13,25 @@ public class AppointmentManager {
     private final ArrayList<Doctor> doctors;
     private final PatientManager patientManager;
     private final DoctorManager doctorManager;
-    private final FileStorageManager storage;
+    private final AppointmentDAO appointmentDAO;
 
     public AppointmentManager(ArrayList<Appointment> appointments, ArrayList<Doctor> doctors,
             PatientManager patientManager, DoctorManager doctorManager,
-            FileStorageManager storage) {
+            AppointmentDAO appointmentDAO) {
         this.appointments = appointments;
         this.doctors = doctors;
         this.patientManager = patientManager;
         this.doctorManager = doctorManager;
-        this.storage = storage;
+        this.appointmentDAO = appointmentDAO;
     }
 
     public ArrayList<Appointment> getAppointments() {
         return appointments;
     }
 
-    public void updateStorage() {
-        storage.saveAppointments(appointments);
+    /** Called by UI panels to persist an appointment update to the database. */
+    public void updateAppointmentInDB(Appointment a) {
+        appointmentDAO.update(a);
     }
 
     // ==================== OPERATIONS ====================
@@ -49,7 +51,7 @@ public class AppointmentManager {
 
         Appointment app = Appointment.create(patientId, doctorId, date);
         appointments.add(app);
-        storage.saveAppointments(appointments);
+        appointmentDAO.insert(app);  // Save to database
         System.out.println("Appointment scheduled successfully! (ID: " + app.getId() + ")");
     }
 
@@ -163,6 +165,7 @@ public class AppointmentManager {
             scheduleAppointment(patient.getId(), doctor.getId(), date);
         } catch (Exception e) {
             System.out.println("  Appointment error: " + e.getMessage());
+            Logger.error("Appointment input error: " + e.getMessage());
         }
     }
 
@@ -213,7 +216,7 @@ public class AppointmentManager {
         }
 
         target.setStatus(newStatus);
-        storage.saveAppointments(appointments);
+        appointmentDAO.update(target);  // Save to database
         System.out.println("  Appointment " + target.getId() + " status updated to: " + newStatus);
     }
 
@@ -260,7 +263,7 @@ public class AppointmentManager {
         target.setDate(newDate);
         // Reset status to Scheduled on reschedule
         target.setStatus("Scheduled");
-        storage.saveAppointments(appointments);
+        appointmentDAO.update(target);  // Save to database
         System.out.println("  Appointment " + target.getId() + " rescheduled to: "
                 + DateUtil.display(newDate) + " (Status reset to Scheduled)");
     }

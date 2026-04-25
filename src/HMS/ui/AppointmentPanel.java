@@ -141,7 +141,7 @@ public class AppointmentPanel extends JPanel {
         if (result == JOptionPane.OK_OPTION) {
             String newStatus = (String) comboStatus.getSelectedItem();
             target.setStatus(newStatus);
-            appointmentManager.updateStorage();
+            appointmentManager.updateAppointmentInDB(target);
             refreshData();
             JOptionPane.showMessageDialog(this, "Status updated successfully!");
         }

@@ -148,7 +148,7 @@ public class DoctorPanel extends JPanel {
                 d.setAge(age);
                 d.setSpecialization(spec);
 
-                doctorManager.updateStorage();
+                doctorManager.updateDoctorInDB(d);
                 refreshData();
                 JOptionPane.showMessageDialog(this, "Doctor updated successfully!");
             } catch (NumberFormatException ex) {

@@ -1,32 +1,34 @@
 package HMS.service;
 
+import HMS.db.DoctorDAO;
 import HMS.model.Doctor;
-import HMS.utils.FileStorageManager;
+import HMS.utils.Logger;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class DoctorManager {
     private final ArrayList<Doctor> doctors;
-    private final FileStorageManager storage;
+    private final DoctorDAO doctorDAO;
 
-    public DoctorManager(ArrayList<Doctor> doctors, FileStorageManager storage) {
+    public DoctorManager(ArrayList<Doctor> doctors, DoctorDAO doctorDAO) {
         this.doctors = doctors;
-        this.storage = storage;
+        this.doctorDAO = doctorDAO;
     }
 
     public ArrayList<Doctor> getDoctors() {
         return doctors;
     }
 
-    public void updateStorage() {
-        storage.saveDoctors(doctors);
+    /** Called by UI panels to persist a doctor update to the database. */
+    public void updateDoctorInDB(Doctor d) {
+        doctorDAO.update(d);
     }
 
     // ==================== OPERATIONS ====================
 
     public void addDoctor(Doctor d) {
         doctors.add(d);
-        storage.saveDoctors(doctors);
+        doctorDAO.insert(d);  // Save to database
         System.out.println("Doctor added successfully! (ID: " + d.getId() + ")");
     }
 
@@ -54,10 +56,11 @@ public class DoctorManager {
         Doctor d = findDoctor(id);
         if (d == null) {
             System.out.println("Doctor with ID " + id + " not found!");
+            Logger.warn("Attempted to remove non-existent doctor: " + id);
             return false;
         }
         doctors.remove(d);
-        storage.saveDoctors(doctors);
+        doctorDAO.delete(id);  // Remove from database
         System.out.println("Dr. " + d.getName() + " (ID: " + id + ") removed successfully.");
         return true;
     }
@@ -105,6 +108,7 @@ public class DoctorManager {
             addDoctor(d);
         } catch (Exception e) {
             System.out.println("  Input error: " + e.getMessage());
+            Logger.error("Doctor input error: " + e.getMessage());
         }
     }
 
@@ -152,10 +156,11 @@ public class DoctorManager {
                 d.setSpecialization(spec);
             }
 
-            storage.saveDoctors(doctors);
+            doctorDAO.update(d);  // Save changes to database
             System.out.println("  Doctor updated successfully!");
         } catch (Exception e) {
             System.out.println("  Update error: " + e.getMessage());
+            Logger.error("Doctor update error: " + e.getMessage());
         }
     }
 

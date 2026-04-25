@@ -1,9 +1,10 @@
 package HMS.service;
 
+import HMS.db.BedDAO;
 import HMS.model.*;
 import HMS.utils.CounterManager;
 import HMS.utils.DateUtil;
-import HMS.utils.FileStorageManager;
+import HMS.utils.Logger;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -12,7 +13,7 @@ public class BedManager {
     // variables
     private final ArrayList<Bed> beds;
     private final PatientManager patientManager;
-    private final FileStorageManager storage;
+    private final BedDAO bedDAO;
 
     // Fixed stay duration for each ward type
     private static final int GENERAL_STAY = 7;
@@ -21,18 +22,24 @@ public class BedManager {
     private static final int SEMI_PRIVATE_STAY = 5;
 
     // constructor
-    public BedManager(ArrayList<Bed> beds, PatientManager patientManager, FileStorageManager storage) {
+    public BedManager(ArrayList<Bed> beds, PatientManager patientManager, BedDAO bedDAO) {
         this.beds = beds;
         this.patientManager = patientManager;
-        this.storage = storage;
+        this.bedDAO = bedDAO;
     }
 
     public ArrayList<Bed> getBeds() {
         return beds;
     }
 
-    public void updateStorage() {
-        storage.saveBeds(beds);
+    /** Called by UI panels to persist a bed update to the database. */
+    public void updateBedInDB(Bed b) {
+        bedDAO.update(b);
+    }
+
+    /** Called by UI panels to insert a new bed into the database. */
+    public void insertBedInDB(Bed b) {
+        bedDAO.insert(b);
     }
 
     // _________OPERATIONS_________
@@ -229,7 +236,7 @@ public class BedManager {
             String dischargeDate = DateUtil.addDays(admitDate, stayDays);
 
             availableBed.book(patient.getId(), admitDate, dischargeDate);
-            storage.saveBeds(beds);
+            bedDAO.update(availableBed);  // Save to database
 
             System.out.println("\n  Bed booked successfully!");
             System.out.println("  Bed ID: " + availableBed.getId());
@@ -240,6 +247,7 @@ public class BedManager {
 
         } catch (Exception e) {
             System.out.println("  Booking error: " + e.getMessage());
+            Logger.error("Bed booking error: " + e.getMessage());
         }
     }
 
@@ -260,7 +268,7 @@ public class BedManager {
                 String patientName = (patient != null) ? patient.getName() : patientId;
 
                 b.discharge();
-                storage.saveBeds(beds);
+                bedDAO.update(b);  // Save to database
                 System.out.println("  Patient " + patientName + " discharged from Bed " + bedId + ".");
                 System.out.println("  Bed " + bedId + " is now AVAILABLE.");
                 return;
@@ -301,7 +309,7 @@ public class BedManager {
         String bedId = CounterManager.getNextBedId();
         Bed newBed = new Bed(bedId, wardType);
         beds.add(newBed);
-        storage.saveBeds(beds);
+        bedDAO.insert(newBed);  // Save to database
 
         System.out.println("\n  New bed added successfully!");
         System.out.println("  Bed ID: " + bedId);

@@ -1,32 +1,34 @@
 package HMS.service;
 
+import HMS.db.PatientDAO;
 import HMS.model.Patient;
-import HMS.utils.FileStorageManager;
+import HMS.utils.Logger;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class PatientManager {
     private final ArrayList<Patient> patients;
-    private final FileStorageManager storage;
+    private final PatientDAO patientDAO;
 
-    public PatientManager(ArrayList<Patient> patients, FileStorageManager storage) {
+    public PatientManager(ArrayList<Patient> patients, PatientDAO patientDAO) {
         this.patients = patients;
-        this.storage = storage;
+        this.patientDAO = patientDAO;
     }
 
     public ArrayList<Patient> getPatients() {
         return patients;
     }
 
-    public void updateStorage() {
-        storage.savePatients(patients);
+    /** Called by UI panels to persist a patient update to the database. */
+    public void updatePatientInDB(Patient p) {
+        patientDAO.update(p);
     }
 
     // ==================== OPERATIONS ====================
 
     public void addPatient(Patient p) {
         patients.add(p);
-        storage.savePatients(patients);
+        patientDAO.insert(p);  // Save to database
         System.out.println("Patient added successfully! (ID: " + p.getId() + ")");
     }
 
@@ -54,10 +56,11 @@ public class PatientManager {
         Patient p = findPatient(id);
         if (p == null) {
             System.out.println("Patient with ID " + id + " not found!");
+            Logger.warn("Attempted to remove non-existent patient: " + id);
             return false;
         }
         patients.remove(p);
-        storage.savePatients(patients);
+        patientDAO.delete(id);  // Remove from database
         System.out.println("Patient " + p.getName() + " (ID: " + id + ") removed successfully.");
         return true;
     }
@@ -105,6 +108,7 @@ public class PatientManager {
             addPatient(p);
         } catch (Exception e) {
             System.out.println("  Input error: " + e.getMessage());
+            Logger.error("Patient input error: " + e.getMessage());
         }
     }
 
@@ -152,10 +156,11 @@ public class PatientManager {
                 p.setDisease(disease);
             }
 
-            storage.savePatients(patients);
+            patientDAO.update(p);  // Save changes to database
             System.out.println("  Patient updated successfully!");
         } catch (Exception e) {
             System.out.println("  Update error: " + e.getMessage());
+            Logger.error("Patient update error: " + e.getMessage());
         }
     }
 

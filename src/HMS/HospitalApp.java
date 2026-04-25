@@ -1,8 +1,9 @@
 package HMS;
 
+import HMS.db.*;
 import HMS.model.*;
 import HMS.service.*;
-import HMS.utils.FileStorageManager;
+import HMS.utils.Logger;
 import java.util.*;
 
 public class HospitalApp {
@@ -12,17 +13,28 @@ public class HospitalApp {
     private final BedManager bedManager;
 
     public HospitalApp() {
-        FileStorageManager storage = new FileStorageManager();
+        // Step 1: Initialize the database (creates tables if they don't exist)
+        DBConnection.initializeDatabase();
 
-        ArrayList<Patient> patients = new ArrayList<>(storage.loadPatients());
-        ArrayList<Doctor> doctors = new ArrayList<>(storage.loadDoctors());
-        ArrayList<Appointment> appointments = new ArrayList<>(storage.loadAppointments());
-        ArrayList<Bed> beds = new ArrayList<>(storage.loadBeds());
+        // Step 2: Create DAO instances
+        PatientDAO patientDAO = new PatientDAO();
+        DoctorDAO doctorDAO = new DoctorDAO();
+        AppointmentDAO appointmentDAO = new AppointmentDAO();
+        BedDAO bedDAO = new BedDAO();
 
-        patientManager = new PatientManager(patients, storage);
-        doctorManager = new DoctorManager(doctors, storage);
-        appointmentManager = new AppointmentManager(appointments, doctors, patientManager, doctorManager, storage);
-        bedManager = new BedManager(beds, patientManager, storage);
+        // Step 3: Load data from database into memory
+        ArrayList<Patient> patients = new ArrayList<>(patientDAO.getAll());
+        ArrayList<Doctor> doctors = new ArrayList<>(doctorDAO.getAll());
+        ArrayList<Appointment> appointments = new ArrayList<>(appointmentDAO.getAll());
+        ArrayList<Bed> beds = new ArrayList<>(bedDAO.getAll());
+
+        // Step 4: Create service managers with DAOs (instead of FileStorageManager)
+        patientManager = new PatientManager(patients, patientDAO);
+        doctorManager = new DoctorManager(doctors, doctorDAO);
+        appointmentManager = new AppointmentManager(appointments, doctors, patientManager, doctorManager, appointmentDAO);
+        bedManager = new BedManager(beds, patientManager, bedDAO);
+
+        Logger.info("HospiCare application started successfully.");
     }
 
     public void runGUI() {
@@ -59,6 +71,7 @@ public class HospitalApp {
                     break;
                 case "0":
                     System.out.println("\nThank you for using HospiCare. Goodbye!");
+                    Logger.info("HospiCare application exited.");
                     return;
                 default:
                     System.out.println("Invalid option! Please try again.");

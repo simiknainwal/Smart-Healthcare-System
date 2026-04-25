@@ -102,7 +102,7 @@ public class BedPanel extends JPanel {
             String id = CounterManager.getNextBedId();
             Bed b = new Bed(id, ward);
             bedManager.getBeds().add(b);
-            bedManager.updateStorage();
+            bedManager.insertBedInDB(b);
             refreshData();
             JOptionPane.showMessageDialog(this, "Bed added successfully!");
         }
@@ -152,7 +152,7 @@ public class BedPanel extends JPanel {
                 String dischargeDate = DateUtil.addDays(admitDate, days);
 
                 target.book(patientId, admitDate, dischargeDate);
-                bedManager.updateStorage();
+                bedManager.updateBedInDB(target);
                 refreshData();
                 JOptionPane.showMessageDialog(this, "Bed booked successfully!");
             } catch (Exception ex) {
@@ -187,7 +187,7 @@ public class BedPanel extends JPanel {
         int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to discharge patient from bed " + id + "?", "Confirm Discharge", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             target.discharge();
-            bedManager.updateStorage();
+            bedManager.updateBedInDB(target);
             refreshData();
         }
     }

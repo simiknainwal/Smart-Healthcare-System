@@ -1,78 +1,106 @@
 package HMS.utils;
 
-import java.io.*;
+import HMS.db.DBConnection;
 
+import java.sql.*;
+
+/**
+ * CounterManager — Generates unique auto-incrementing IDs for all entities.
+ *
+ * BEFORE: Read/wrote counters from counters.txt (file handling)
+ * AFTER:  Read/writes counters from the "counters" table in SQLite (JDBC)
+ *
+ * The counters table stores:
+ *   entity   | counter
+ *   ---------+--------
+ *   PATIENT  | 5
+ *   DOCTOR   | 10
+ *   ...
+ */
 public class CounterManager {
-    private static final String COUNTER_FILE = "counters.txt";
+
     private static int patientCounter = 0;
     private static int doctorCounter = 0;
     private static int appointmentCounter = 0;
     private static int bedCounter = 0;
 
+    // Static initializer — runs once when the class is first used
     static {
         loadCounters();
     }
 
+    /**
+     * Loads all counter values from the database.
+     * If the counters table is empty (first run), counters stay at 0.
+     */
     private static void loadCounters() {
-        try (BufferedReader reader = new BufferedReader(new FileReader(COUNTER_FILE))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split("=");
-                if (parts.length == 2) {
-                    switch (parts[0]) {
-                        case "PATIENT":
-                            patientCounter = Integer.parseInt(parts[1]);
-                            break;
-                        case "DOCTOR":
-                            doctorCounter = Integer.parseInt(parts[1]);
-                            break;
-                        case "APPOINTMENT":
-                            appointmentCounter = Integer.parseInt(parts[1]);
-                            break;
-                        case "BED":
-                            bedCounter = Integer.parseInt(parts[1]);
-                            break;
-                    }
+        String sql = "SELECT entity, counter FROM counters";
+
+        try (Connection conn = DBConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                String entity = rs.getString("entity");
+                int value = rs.getInt("counter");
+
+                switch (entity) {
+                    case "PATIENT":     patientCounter = value;     break;
+                    case "DOCTOR":      doctorCounter = value;      break;
+                    case "APPOINTMENT": appointmentCounter = value; break;
+                    case "BED":         bedCounter = value;         break;
                 }
             }
 
-        } catch (Exception e) {
-            System.err.println("Counter file not found, starting fresh with defaults");
+        } catch (SQLException e) {
+            System.err.println("Counter load failed (using defaults): " + e.getMessage());
+            Logger.error("Counter load failed: " + e.getMessage());
         }
     }
 
-    private static void saveCounters() {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(COUNTER_FILE))) {
-            writer.println("PATIENT=" + patientCounter);
-            writer.println("DOCTOR=" + doctorCounter);
-            writer.println("APPOINTMENT=" + appointmentCounter);
-            writer.println("BED=" + bedCounter);
-        } catch (IOException e) {
-            System.err.println("Counter save failed: " + e.getMessage());
+    /**
+     * Saves a single counter value to the database.
+     * Uses INSERT OR REPLACE to handle both first-time inserts and updates.
+     */
+    private static void saveCounter(String entity, int value) {
+        String sql = "INSERT OR REPLACE INTO counters (entity, counter) VALUES (?, ?)";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, entity);
+            pstmt.setInt(2, value);
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            System.err.println("Counter save failed for " + entity + ": " + e.getMessage());
+            Logger.error("Counter save failed for " + entity + ": " + e.getMessage());
         }
     }
+
+    // ==================== ID GENERATORS ====================
 
     public static String getNextPatientId() {
         String id = String.format("PAT%03d", ++patientCounter);
-        saveCounters();
+        saveCounter("PATIENT", patientCounter);
         return id;
     }
 
     public static String getNextDoctorId() {
         String id = String.format("DOC%03d", ++doctorCounter);
-        saveCounters();
+        saveCounter("DOCTOR", doctorCounter);
         return id;
     }
 
     public static String getNextAppointmentId() {
         String id = String.format("APP%03d", ++appointmentCounter);
-        saveCounters();
+        saveCounter("APPOINTMENT", appointmentCounter);
         return id;
     }
 
     public static String getNextBedId() {
         String id = String.format("BED%03d", ++bedCounter);
-        saveCounters();
+        saveCounter("BED", bedCounter);
         return id;
     }
 }
