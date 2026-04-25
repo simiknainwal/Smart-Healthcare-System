@@ -78,11 +78,17 @@ public class DoctorDashboard extends JFrame {
 
         JButton btnProfile = createNavButton("My Profile", "PROFILE");
         JButton btnAppointments = createNavButton("My Appointments", "APPOINTMENTS");
+        JButton btnPrescribe = createNavButton("Prescribe", "PRESCRIBE");
+        JButton btnHistory = createNavButton("Patient History", "HISTORY");
         JButton btnLookup = createNavButton("Patient Lookup", "LOOKUP");
 
         navPanel.add(btnProfile);
         navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         navPanel.add(btnAppointments);
+        navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        navPanel.add(btnPrescribe);
+        navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        navPanel.add(btnHistory);
         navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         navPanel.add(btnLookup);
 
@@ -114,6 +120,8 @@ public class DoctorDashboard extends JFrame {
         // Build Panels
         mainContentPanel.add(createProfilePanel(), "PROFILE");
         mainContentPanel.add(createAppointmentsPanel(), "APPOINTMENTS");
+        mainContentPanel.add(createPrescribePanel(), "PRESCRIBE");
+        mainContentPanel.add(createHistoryPanel(), "HISTORY");
         mainContentPanel.add(createLookupPanel(), "LOOKUP");
 
         add(mainContentPanel, BorderLayout.CENTER);
@@ -263,6 +271,236 @@ public class DoctorDashboard extends JFrame {
         }
     }
 
+    private JPanel createPrescribePanel() {
+        JPanel panel = new JPanel(new BorderLayout(15, 15));
+        panel.setBackground(UIUtils.MAIN_BG);
+        panel.setBorder(new EmptyBorder(30, 30, 30, 30));
+
+        JLabel lblTitle = new JLabel("Write a Prescription");
+        lblTitle.setFont(UIUtils.TITLE_FONT);
+        lblTitle.setForeground(UIUtils.TEXT_PRIMARY);
+        panel.add(lblTitle, BorderLayout.NORTH);
+
+        // ---- Form ----
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setBackground(Color.WHITE);
+        form.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(223, 230, 233)),
+                new EmptyBorder(25, 25, 25, 25)
+        ));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.anchor = GridBagConstraints.WEST;
+
+        JTextField txtPatientId  = new JTextField(20);
+        JTextField txtMedication = new JTextField(20);
+        JTextField txtDosage     = new JTextField(20);
+        JTextField txtFee        = new JTextField("500", 20); // default consultation fee
+
+        int row = 0;
+        gbc.gridx = 0; gbc.gridy = row; form.add(boldLabel("Patient ID:"), gbc);
+        gbc.gridx = 1;                  form.add(txtPatientId, gbc);
+        row++;
+        gbc.gridx = 0; gbc.gridy = row; form.add(boldLabel("Medication:"), gbc);
+        gbc.gridx = 1;                  form.add(txtMedication, gbc);
+        row++;
+        gbc.gridx = 0; gbc.gridy = row; form.add(boldLabel("Dosage / Instructions:"), gbc);
+        gbc.gridx = 1;                  form.add(txtDosage, gbc);
+        row++;
+        gbc.gridx = 0; gbc.gridy = row; form.add(boldLabel("Consultation Fee (₹):"), gbc);
+        gbc.gridx = 1;                  form.add(txtFee, gbc);
+
+        // ---- History table below form ----
+        JLabel lblHistory = new JLabel("My Recent Prescriptions");
+        lblHistory.setFont(UIUtils.HEADER_FONT);
+        lblHistory.setForeground(UIUtils.TEXT_PRIMARY);
+
+        String[] cols = {"Pres. ID", "Patient ID", "Medication", "Dosage", "Date"};
+        DefaultTableModel prescTableModel = new DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        JTable prescTable = new JTable(prescTableModel);
+        UIUtils.styleTable(prescTable);
+        JScrollPane scroll = new JScrollPane(prescTable);
+        scroll.setBorder(BorderFactory.createLineBorder(new Color(223, 230, 233)));
+        scroll.setPreferredSize(new Dimension(0, 200));
+
+        // Populate history
+        if (doctor != null) {
+            prescriptionManager.getPrescriptionsByDoctor(doctor.getId()).forEach(p ->
+                prescTableModel.addRow(new Object[]{
+                        p.getId(), p.getPatientId(), p.getMedication(), p.getDosage(), p.getDate()}));
+        }
+
+        // ---- Submit button ----
+        JButton btnSubmit = new JButton("Issue Prescription + Bill");
+        UIUtils.styleButton(btnSubmit, true);
+        btnSubmit.addActionListener(e -> {
+            String patId    = txtPatientId.getText().trim();
+            String med      = txtMedication.getText().trim();
+            String dosage   = txtDosage.getText().trim();
+            String feeStr   = txtFee.getText().trim();
+
+            if (patId.isEmpty() || med.isEmpty() || dosage.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Patient ID, medication and dosage are required.",
+                        "Validation Error", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            if (patientManager.findPatient(patId) == null) {
+                JOptionPane.showMessageDialog(this, "Patient ID '" + patId + "' not found.",
+                        "Not Found", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            double fee = 500.0;
+            try { fee = Double.parseDouble(feeStr); } catch (NumberFormatException ignored) {}
+
+            Prescription p = prescriptionManager.addPrescription(
+                    patId, doctor.getId(), med, dosage);
+            billingManager.generateBill(
+                    patId, fee, "Consultation + Prescription (" + p.getId() + ")");
+
+            // Refresh history table
+            prescTableModel.addRow(new Object[]{
+                    p.getId(), p.getPatientId(), p.getMedication(), p.getDosage(), p.getDate()});
+
+            txtPatientId.setText("");
+            txtMedication.setText("");
+            txtDosage.setText("");
+            txtFee.setText("500");
+
+            JOptionPane.showMessageDialog(this,
+                    "Prescription " + p.getId() + " issued and bill generated!",
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
+        });
+
+        JPanel south = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        south.setBackground(UIUtils.MAIN_BG);
+        south.add(btnSubmit);
+
+        JPanel center = new JPanel(new BorderLayout(10, 10));
+        center.setBackground(UIUtils.MAIN_BG);
+        center.add(form, BorderLayout.NORTH);
+        center.add(lblHistory, BorderLayout.CENTER);
+        center.add(scroll, BorderLayout.SOUTH);
+
+        panel.add(center, BorderLayout.CENTER);
+        panel.add(south, BorderLayout.SOUTH);
+        return panel;
+    }
+
+    private JPanel createHistoryPanel() {
+        JPanel panel = new JPanel(new BorderLayout(20, 15));
+        panel.setBackground(UIUtils.MAIN_BG);
+        panel.setBorder(new EmptyBorder(30, 30, 30, 30));
+
+        JLabel lblTitle = new JLabel("Patient History");
+        lblTitle.setFont(UIUtils.TITLE_FONT);
+        lblTitle.setForeground(UIUtils.TEXT_PRIMARY);
+
+        // Search bar
+        JPanel searchBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        searchBar.setBackground(UIUtils.MAIN_BG);
+        JTextField txtId = new JTextField(15);
+        txtId.setFont(UIUtils.MAIN_FONT);
+        JButton btnSearch = new JButton("View History");
+        UIUtils.styleButton(btnSearch, true);
+        searchBar.add(new JLabel("Patient ID:"));
+        searchBar.add(txtId);
+        searchBar.add(btnSearch);
+
+        JPanel northPanel = new JPanel(new BorderLayout(0, 10));
+        northPanel.setBackground(UIUtils.MAIN_BG);
+        northPanel.add(lblTitle, BorderLayout.NORTH);
+        northPanel.add(searchBar, BorderLayout.SOUTH);
+        panel.add(northPanel, BorderLayout.NORTH);
+
+        // Results area with 3 tables
+        JPanel resultArea = new JPanel();
+        resultArea.setLayout(new BoxLayout(resultArea, BoxLayout.Y_AXIS));
+        resultArea.setBackground(UIUtils.MAIN_BG);
+        JScrollPane resultScroll = new JScrollPane(resultArea);
+        resultScroll.setBorder(null);
+        panel.add(resultScroll, BorderLayout.CENTER);
+
+        btnSearch.addActionListener(e -> {
+            resultArea.removeAll();
+            String id = txtId.getText().trim();
+            Patient p = patientManager.findPatient(id);
+
+            if (p == null) {
+                JLabel err = new JLabel("Patient '" + id + "' not found.");
+                err.setForeground(Color.RED);
+                resultArea.add(err);
+                resultArea.revalidate(); resultArea.repaint();
+                return;
+            }
+
+            // Patient info card
+            resultArea.add(sectionLabel("Patient: " + p.getName() + " (" + p.getId() + ") — " + p.getDisease()));
+            resultArea.add(Box.createRigidArea(new Dimension(0, 10)));
+
+            // Appointments
+            resultArea.add(sectionLabel("Appointments"));
+            String[] aCols = {"Appt ID", "Doctor ID", "Date", "Status"};
+            DefaultTableModel aModel = new DefaultTableModel(aCols, 0) { public boolean isCellEditable(int r, int c) { return false; } };
+            appointmentManager.getAppointments().stream()
+                    .filter(a -> a.getPatientId().equals(p.getId()))
+                    .forEach(a -> aModel.addRow(new Object[]{a.getId(), a.getDoctorId(), a.getDate(), a.getStatus()}));
+            resultArea.add(styledTable(aModel));
+            resultArea.add(Box.createRigidArea(new Dimension(0, 15)));
+
+            // Prescriptions
+            resultArea.add(sectionLabel("Prescriptions"));
+            String[] pCols = {"Pres. ID", "Doctor ID", "Medication", "Dosage", "Date"};
+            DefaultTableModel pModel = new DefaultTableModel(pCols, 0) { public boolean isCellEditable(int r, int c) { return false; } };
+            prescriptionManager.getPrescriptionsByPatient(p.getId())
+                    .forEach(pr -> pModel.addRow(new Object[]{pr.getId(), pr.getDoctorId(), pr.getMedication(), pr.getDosage(), pr.getDate()}));
+            resultArea.add(styledTable(pModel));
+            resultArea.add(Box.createRigidArea(new Dimension(0, 15)));
+
+            // Reports
+            resultArea.add(sectionLabel("Medical Reports"));
+            String[] rCols = {"Report ID", "Type", "Doctor ID", "Date"};
+            DefaultTableModel rModel = new DefaultTableModel(rCols, 0) { public boolean isCellEditable(int r, int c) { return false; } };
+            reportManager.getReportsByPatient(p.getId())
+                    .forEach(r2 -> rModel.addRow(new Object[]{r2.getId(), r2.getType(), r2.getDoctorId(), r2.getDate()}));
+            resultArea.add(styledTable(rModel));
+
+            resultArea.revalidate();
+            resultArea.repaint();
+        });
+
+        return panel;
+    }
+
+    // ==================== HELPERS ====================
+
+    private JLabel boldLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        return lbl;
+    }
+
+    private JLabel sectionLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(UIUtils.HEADER_FONT);
+        lbl.setForeground(UIUtils.TEXT_PRIMARY);
+        lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return lbl;
+    }
+
+    private JScrollPane styledTable(DefaultTableModel model) {
+        JTable table = new JTable(model);
+        UIUtils.styleTable(table);
+        JScrollPane sp = new JScrollPane(table);
+        sp.setBorder(BorderFactory.createLineBorder(new Color(223, 230, 233)));
+        sp.setPreferredSize(new Dimension(Integer.MAX_VALUE, 130));
+        sp.setMaximumSize(new Dimension(Integer.MAX_VALUE, 130));
+        sp.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return sp;
+    }
+
     private JPanel createLookupPanel() {
         JPanel panel = new JPanel(new BorderLayout(20, 20));
         panel.setBackground(UIUtils.MAIN_BG);
@@ -326,3 +564,4 @@ public class DoctorDashboard extends JFrame {
         return panel;
     }
 }
+
