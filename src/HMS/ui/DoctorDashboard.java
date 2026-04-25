@@ -16,8 +16,12 @@ public class DoctorDashboard extends JFrame {
     private final DoctorManager doctorManager;
     private final AppointmentManager appointmentManager;
     private final PatientManager patientManager;
+    // Phase 3 managers — used in Step 4 UI tabs
+    private final PrescriptionManager prescriptionManager;
+    private final BillingManager billingManager;
+    private final ReportManager reportManager;
     private final Runnable onLogout;
-    
+
     private Doctor doctor;
 
     private CardLayout cardLayout;
@@ -25,16 +29,19 @@ public class DoctorDashboard extends JFrame {
     private DefaultTableModel appointmentTableModel;
     private JTable appointmentTable;
 
-    public DoctorDashboard(User user, DoctorManager doctorManager, 
+    public DoctorDashboard(User user, DoctorManager doctorManager,
                            AppointmentManager appointmentManager, PatientManager patientManager,
-                           Runnable onLogout) {
+                           PrescriptionManager prescriptionManager, BillingManager billingManager,
+                           ReportManager reportManager, Runnable onLogout) {
         this.currentUser = user;
         this.doctorManager = doctorManager;
         this.appointmentManager = appointmentManager;
         this.patientManager = patientManager;
+        this.prescriptionManager = prescriptionManager;
+        this.billingManager = billingManager;
+        this.reportManager = reportManager;
         this.onLogout = onLogout;
 
-        // Fetch the doctor data
         this.doctor = doctorManager.findDoctor(currentUser.getLinkedId());
 
         initFrame();

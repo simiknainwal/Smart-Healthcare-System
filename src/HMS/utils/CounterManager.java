@@ -23,6 +23,9 @@ public class CounterManager {
     private static int doctorCounter = 0;
     private static int appointmentCounter = 0;
     private static int bedCounter = 0;
+    private static int prescriptionCounter = 0;
+    private static int billCounter = 0;
+    private static int reportCounter = 0;
 
     // Static initializer — runs once when the class is first used
     static {
@@ -45,10 +48,13 @@ public class CounterManager {
                 int value = rs.getInt("counter");
 
                 switch (entity) {
-                    case "PATIENT":     patientCounter = value;     break;
-                    case "DOCTOR":      doctorCounter = value;      break;
-                    case "APPOINTMENT": appointmentCounter = value; break;
-                    case "BED":         bedCounter = value;         break;
+                    case "PATIENT":      patientCounter = value;      break;
+                    case "DOCTOR":       doctorCounter = value;       break;
+                    case "APPOINTMENT":  appointmentCounter = value;  break;
+                    case "BED":          bedCounter = value;          break;
+                    case "PRESCRIPTION": prescriptionCounter = value; break;
+                    case "BILL":         billCounter = value;         break;
+                    case "REPORT":       reportCounter = value;       break;
                 }
             }
 
@@ -101,6 +107,24 @@ public class CounterManager {
     public static String getNextBedId() {
         String id = String.format("BED%03d", ++bedCounter);
         saveCounter("BED", bedCounter);
+        return id;
+    }
+
+    public static String getNextPrescriptionId() {
+        String id = String.format("PRE%03d", ++prescriptionCounter);
+        saveCounter("PRESCRIPTION", prescriptionCounter);
+        return id;
+    }
+
+    public static String getNextBillId() {
+        String id = String.format("BIL%03d", ++billCounter);
+        saveCounter("BILL", billCounter);
+        return id;
+    }
+
+    public static String getNextReportId() {
+        String id = String.format("REP%03d", ++reportCounter);
+        saveCounter("REPORT", reportCounter);
         return id;
     }
 }

@@ -102,6 +102,39 @@ public class DBConnection {
                             "    created_at TEXT NOT NULL" +
                             ")");
 
+            // --- prescriptions table ---
+            stmt.execute(
+                    "CREATE TABLE IF NOT EXISTS prescriptions (" +
+                            "    id TEXT PRIMARY KEY," +
+                            "    patient_id TEXT NOT NULL," +
+                            "    doctor_id TEXT NOT NULL," +
+                            "    medication TEXT NOT NULL," +
+                            "    dosage TEXT NOT NULL," +
+                            "    date TEXT NOT NULL" +
+                            ")");
+
+            // --- bills table ---
+            stmt.execute(
+                    "CREATE TABLE IF NOT EXISTS bills (" +
+                            "    id TEXT PRIMARY KEY," +
+                            "    patient_id TEXT NOT NULL," +
+                            "    amount REAL NOT NULL," +
+                            "    description TEXT NOT NULL," +
+                            "    date TEXT NOT NULL," +
+                            "    status TEXT NOT NULL DEFAULT 'UNPAID'" +
+                            ")");
+
+            // --- reports table ---
+            stmt.execute(
+                    "CREATE TABLE IF NOT EXISTS reports (" +
+                            "    id TEXT PRIMARY KEY," +
+                            "    patient_id TEXT NOT NULL," +
+                            "    doctor_id TEXT NOT NULL," +
+                            "    type TEXT NOT NULL," +
+                            "    content TEXT NOT NULL," +
+                            "    date TEXT NOT NULL" +
+                            ")");
+
             System.out.println("[DB] Database initialized successfully.");
             
             // Seed default admin account

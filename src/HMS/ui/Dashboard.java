@@ -2,6 +2,7 @@ package HMS.ui;
 
 import HMS.service.AppointmentManager;
 import HMS.service.BedManager;
+import HMS.service.BillingManager;
 import HMS.service.DoctorManager;
 import HMS.service.PatientManager;
 
@@ -15,6 +16,8 @@ public class Dashboard extends JFrame {
     private final DoctorManager doctorManager;
     private final AppointmentManager appointmentManager;
     private final BedManager bedManager;
+    // Phase 3 — used for Billing panel in Step 5
+    private final BillingManager billingManager;
 
     private CardLayout cardLayout;
     private JPanel mainContentPanel;
@@ -22,11 +25,12 @@ public class Dashboard extends JFrame {
 
     public Dashboard(PatientManager patientManager, DoctorManager doctorManager,
                      AppointmentManager appointmentManager, BedManager bedManager,
-                     Runnable onLogout) {
+                     BillingManager billingManager, Runnable onLogout) {
         this.patientManager = patientManager;
         this.doctorManager = doctorManager;
         this.appointmentManager = appointmentManager;
         this.bedManager = bedManager;
+        this.billingManager = billingManager;
         this.onLogout = onLogout;
 
         initFrame();
