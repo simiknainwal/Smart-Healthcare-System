@@ -25,7 +25,6 @@ public class CounterManager {
     private static int bedCounter = 0;
     private static int prescriptionCounter = 0;
     private static int billCounter = 0;
-    private static int reportCounter = 0;
 
     // Static initializer — runs once when the class is first used
     static {
@@ -54,7 +53,6 @@ public class CounterManager {
                     case "BED":          bedCounter = value;          break;
                     case "PRESCRIPTION": prescriptionCounter = value; break;
                     case "BILL":         billCounter = value;         break;
-                    case "REPORT":       reportCounter = value;       break;
                 }
             }
 
@@ -119,12 +117,6 @@ public class CounterManager {
     public static String getNextBillId() {
         String id = String.format("BIL%03d", ++billCounter);
         saveCounter("BILL", billCounter);
-        return id;
-    }
-
-    public static String getNextReportId() {
-        String id = String.format("REP%03d", ++reportCounter);
-        saveCounter("REPORT", reportCounter);
         return id;
     }
 }

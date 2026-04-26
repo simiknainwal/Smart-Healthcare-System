@@ -11,16 +11,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class PatientDashboard extends JFrame {
-
-    private final User currentUser;
-    private final PatientManager patientManager;
     private final DoctorManager doctorManager;
     private final AppointmentManager appointmentManager;
     private final BedManager bedManager;
     // Phase 3 managers — used in Step 5 UI tabs
     private final PrescriptionManager prescriptionManager;
     private final BillingManager billingManager;
-    private final ReportManager reportManager;
     private final Runnable onLogout;
 
     private Patient patient;
@@ -32,18 +28,15 @@ public class PatientDashboard extends JFrame {
     public PatientDashboard(User user, PatientManager patientManager, DoctorManager doctorManager,
                             AppointmentManager appointmentManager, BedManager bedManager,
                             PrescriptionManager prescriptionManager, BillingManager billingManager,
-                            ReportManager reportManager, Runnable onLogout) {
-        this.currentUser = user;
-        this.patientManager = patientManager;
+                            Runnable onLogout) {
         this.doctorManager = doctorManager;
         this.appointmentManager = appointmentManager;
         this.bedManager = bedManager;
         this.prescriptionManager = prescriptionManager;
         this.billingManager = billingManager;
-        this.reportManager = reportManager;
         this.onLogout = onLogout;
 
-        this.patient = patientManager.findPatient(currentUser.getLinkedId());
+        this.patient = patientManager.findPatient(user.getLinkedId());
 
         initFrame();
         initComponents();
@@ -82,7 +75,6 @@ public class PatientDashboard extends JFrame {
         JButton btnBed = createNavButton("My Bed Status", "BED");
         JButton btnPrescriptions = createNavButton("My Prescriptions", "PRESCRIPTIONS");
         JButton btnBills = createNavButton("My Bills", "BILLS");
-        JButton btnReports = createNavButton("My Reports", "REPORTS");
 
         navPanel.add(btnProfile);
         navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
@@ -93,8 +85,6 @@ public class PatientDashboard extends JFrame {
         navPanel.add(btnPrescriptions);
         navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         navPanel.add(btnBills);
-        navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        navPanel.add(btnReports);
 
         sidebar.add(navPanel, BorderLayout.CENTER);
 
@@ -127,7 +117,6 @@ public class PatientDashboard extends JFrame {
         mainContentPanel.add(createBedPanel(), "BED");
         mainContentPanel.add(createPrescriptionsPanel(), "PRESCRIPTIONS");
         mainContentPanel.add(createBillsPanel(), "BILLS");
-        mainContentPanel.add(createReportsPanel(), "REPORTS");
 
         add(mainContentPanel, BorderLayout.CENTER);
 
@@ -612,71 +601,6 @@ public class PatientDashboard extends JFrame {
         note.setFont(new Font("Segoe UI", Font.ITALIC, 12));
         note.setForeground(Color.GRAY);
         panel.add(note, BorderLayout.SOUTH);
-        return panel;
-    }
-
-    private JPanel createReportsPanel() {
-        JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setBackground(UIUtils.MAIN_BG);
-        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
-
-        JLabel lblTitle = new JLabel("My Medical Reports");
-        lblTitle.setFont(UIUtils.TITLE_FONT);
-        lblTitle.setForeground(UIUtils.TEXT_PRIMARY);
-        panel.add(lblTitle, BorderLayout.NORTH);
-
-        // Top: summary table
-        String[] cols = {"Report ID", "Type", "Doctor ID", "Date"};
-        DefaultTableModel model = new DefaultTableModel(cols, 0) {
-            public boolean isCellEditable(int r, int c) { return false; }
-        };
-        JTable table = new JTable(model);
-        UIUtils.styleTable(table);
-
-        List<HMS.model.MedReport> reports = patient != null
-                ? reportManager.getReportsByPatient(patient.getId())
-                : new java.util.ArrayList<>();
-
-        reports.forEach(r -> model.addRow(new Object[]{
-                r.getId(), r.getType(), r.getDoctorId(),
-                HMS.utils.DateUtil.display(r.getDate())}));
-
-        if (model.getRowCount() == 0) {
-            model.addRow(new Object[]{"—", "No reports on record.", "", ""});
-        }
-
-        JScrollPane scroll = new JScrollPane(table);
-        scroll.setBorder(BorderFactory.createLineBorder(new Color(223, 230, 233)));
-        scroll.setPreferredSize(new Dimension(0, 200));
-
-        // Bottom: content viewer — shows selected row's content
-        JLabel lblContent = new JLabel("Select a report above to read its contents.");
-        lblContent.setFont(new Font("Segoe UI", Font.ITALIC, 13));
-        lblContent.setForeground(Color.GRAY);
-
-        JTextArea txtContent = new JTextArea();
-        txtContent.setFont(UIUtils.MAIN_FONT);
-        txtContent.setLineWrap(true);
-        txtContent.setWrapStyleWord(true);
-        txtContent.setEditable(false);
-        txtContent.setBackground(Color.WHITE);
-        txtContent.setBorder(new EmptyBorder(10, 10, 10, 10));
-        JScrollPane contentScroll = new JScrollPane(txtContent);
-        contentScroll.setBorder(BorderFactory.createTitledBorder("Report Content"));
-
-        table.getSelectionModel().addListSelectionListener(e -> {
-            int row = table.getSelectedRow();
-            if (row >= 0 && row < reports.size()) {
-                txtContent.setText(reports.get(row).getContent());
-            }
-        });
-
-        JPanel center = new JPanel(new BorderLayout(10, 10));
-        center.setBackground(UIUtils.MAIN_BG);
-        center.add(scroll, BorderLayout.NORTH);
-        center.add(contentScroll, BorderLayout.CENTER);
-
-        panel.add(center, BorderLayout.CENTER);
         return panel;
     }
 }

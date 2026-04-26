@@ -124,17 +124,6 @@ public class DBConnection {
                             "    status TEXT NOT NULL DEFAULT 'UNPAID'" +
                             ")");
 
-            // --- reports table ---
-            stmt.execute(
-                    "CREATE TABLE IF NOT EXISTS reports (" +
-                            "    id TEXT PRIMARY KEY," +
-                            "    patient_id TEXT NOT NULL," +
-                            "    doctor_id TEXT NOT NULL," +
-                            "    type TEXT NOT NULL," +
-                            "    content TEXT NOT NULL," +
-                            "    date TEXT NOT NULL" +
-                            ")");
-
             System.out.println("[DB] Database initialized successfully.");
             
             // Seed default admin account

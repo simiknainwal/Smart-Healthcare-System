@@ -12,14 +12,11 @@ import java.util.stream.Collectors;
 
 public class DoctorDashboard extends JFrame {
 
-    private final User currentUser;
-    private final DoctorManager doctorManager;
     private final AppointmentManager appointmentManager;
     private final PatientManager patientManager;
     // Phase 3 managers — used in Step 4 UI tabs
     private final PrescriptionManager prescriptionManager;
     private final BillingManager billingManager;
-    private final ReportManager reportManager;
     private final Runnable onLogout;
 
     private Doctor doctor;
@@ -32,17 +29,14 @@ public class DoctorDashboard extends JFrame {
     public DoctorDashboard(User user, DoctorManager doctorManager,
                            AppointmentManager appointmentManager, PatientManager patientManager,
                            PrescriptionManager prescriptionManager, BillingManager billingManager,
-                           ReportManager reportManager, Runnable onLogout) {
-        this.currentUser = user;
-        this.doctorManager = doctorManager;
+                           Runnable onLogout) {
         this.appointmentManager = appointmentManager;
         this.patientManager = patientManager;
         this.prescriptionManager = prescriptionManager;
         this.billingManager = billingManager;
-        this.reportManager = reportManager;
         this.onLogout = onLogout;
 
-        this.doctor = doctorManager.findDoctor(currentUser.getLinkedId());
+        this.doctor = doctorManager.findDoctor(user.getLinkedId());
 
         initFrame();
         initComponents();
@@ -457,15 +451,6 @@ public class DoctorDashboard extends JFrame {
             prescriptionManager.getPrescriptionsByPatient(p.getId())
                     .forEach(pr -> pModel.addRow(new Object[]{pr.getId(), pr.getDoctorId(), pr.getMedication(), pr.getDosage(), pr.getDate()}));
             resultArea.add(styledTable(pModel));
-            resultArea.add(Box.createRigidArea(new Dimension(0, 15)));
-
-            // Reports
-            resultArea.add(sectionLabel("Medical Reports"));
-            String[] rCols = {"Report ID", "Type", "Doctor ID", "Date"};
-            DefaultTableModel rModel = new DefaultTableModel(rCols, 0) { public boolean isCellEditable(int r, int c) { return false; } };
-            reportManager.getReportsByPatient(p.getId())
-                    .forEach(r2 -> rModel.addRow(new Object[]{r2.getId(), r2.getType(), r2.getDoctorId(), r2.getDate()}));
-            resultArea.add(styledTable(rModel));
 
             resultArea.revalidate();
             resultArea.repaint();

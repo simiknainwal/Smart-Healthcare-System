@@ -13,7 +13,6 @@ public class HospitalApp {
     private final BedManager bedManager;
     private final PrescriptionManager prescriptionManager;
     private final BillingManager billingManager;
-    private final ReportManager reportManager;
 
     public HospitalApp() {
         // Step 1: Initialize the database (creates tables if they don't exist)
@@ -26,7 +25,6 @@ public class HospitalApp {
         BedDAO bedDAO = new BedDAO();
         PrescriptionDAO prescriptionDAO = new PrescriptionDAO();
         BillDAO billDAO = new BillDAO();
-        MedReportDAO reportDAO = new MedReportDAO();
 
         // Step 3: Load data from database into memory
         ArrayList<Patient> patients = new ArrayList<>(patientDAO.getAll());
@@ -35,7 +33,6 @@ public class HospitalApp {
         ArrayList<Bed> beds = new ArrayList<>(bedDAO.getAll());
         ArrayList<Prescription> prescriptions = new ArrayList<>(prescriptionDAO.getAll());
         ArrayList<Bill> bills = new ArrayList<>(billDAO.getAll());
-        ArrayList<MedReport> reports = new ArrayList<>(reportDAO.getAll());
 
         // Step 4: Create service managers with DAOs
         patientManager = new PatientManager(patients, patientDAO);
@@ -44,7 +41,6 @@ public class HospitalApp {
         bedManager = new BedManager(beds, patientManager, bedDAO);
         prescriptionManager = new PrescriptionManager(prescriptions, prescriptionDAO);
         billingManager = new BillingManager(bills, billDAO);
-        reportManager = new ReportManager(reports, reportDAO);
 
         Logger.info("HospiCare application started successfully.");
     }
@@ -70,12 +66,12 @@ public class HospitalApp {
             } else if (user.getRole().equals("DOCTOR")) {
                 HMS.ui.DoctorDashboard dashboard = new HMS.ui.DoctorDashboard(
                         user, doctorManager, appointmentManager, patientManager,
-                        prescriptionManager, billingManager, reportManager, () -> runGUI());
+                        prescriptionManager, billingManager, () -> runGUI());
                 dashboard.setVisible(true);
             } else if (user.getRole().equals("PATIENT")) {
                 HMS.ui.PatientDashboard dashboard = new HMS.ui.PatientDashboard(
                         user, patientManager, doctorManager, appointmentManager, bedManager,
-                        prescriptionManager, billingManager, reportManager, () -> runGUI());
+                        prescriptionManager, billingManager, () -> runGUI());
                 dashboard.setVisible(true);
             }
         });
