@@ -319,12 +319,22 @@ public class Dashboard extends JFrame {
 
         JButton btnDelete = new JButton("Delete Account");
         UIUtils.styleDangerButton(btnDelete);
+        btnDelete.setEnabled(false); // Default disabled
+
+        userTable.getSelectionModel().addListSelectionListener(e -> {
+            int row = userTable.getSelectedRow();
+            if (row != -1) {
+                String role = (String) userModel.getValueAt(row, 1);
+                btnDelete.setEnabled(!"ADMIN".equals(role));
+            } else {
+                btnDelete.setEnabled(false);
+            }
+        });
+
         btnDelete.addActionListener(e -> {
             int row = userTable.getSelectedRow();
-            if (row == -1) {
-                JOptionPane.showMessageDialog(panel, "Select an account to delete.", "Warning", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
+            if (row == -1) return;
+            
             String username = (String) userModel.getValueAt(row, 0);
             String role = (String) userModel.getValueAt(row, 1);
             

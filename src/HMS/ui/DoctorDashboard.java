@@ -175,7 +175,7 @@ public class DoctorDashboard extends JFrame {
         
         JLabel lblLabel = new JLabel(label);
         lblLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblLabel.setPreferredSize(new Dimension(120, 25));
+        lblLabel.setPreferredSize(new Dimension(140, 25));
         
         JLabel lblValue = new JLabel(value);
         lblValue.setFont(UIUtils.MAIN_FONT);

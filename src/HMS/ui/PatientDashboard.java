@@ -175,7 +175,7 @@ public class PatientDashboard extends JFrame {
         
         JLabel lblLabel = new JLabel(label);
         lblLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblLabel.setPreferredSize(new Dimension(100, 25));
+        lblLabel.setPreferredSize(new Dimension(140, 25));
         
         JLabel lblValue = new JLabel(value);
         lblValue.setFont(UIUtils.MAIN_FONT);
@@ -296,7 +296,7 @@ public class PatientDashboard extends JFrame {
         form.add(Box.createRigidArea(new Dimension(0, 5)));
         form.add(comboDoctors);
         form.add(Box.createRigidArea(new Dimension(0, 15)));
-        form.add(new JLabel("Preferred Date (dd/MM/yyyy):"));
+        form.add(new JLabel("Preferred Date (yyyy-MM-dd):"));
         form.add(Box.createRigidArea(new Dimension(0, 5)));
         form.add(txtDate);
 
@@ -318,9 +318,13 @@ public class PatientDashboard extends JFrame {
 
             String date = txtDate.getText().trim();
             try {
-                HMS.utils.DateUtil.parse(date); // validate
+                java.time.LocalDate requestedDate = HMS.utils.DateUtil.parse(date); // validate
+                if (requestedDate.isBefore(HMS.utils.DateUtil.today())) {
+                    JOptionPane.showMessageDialog(dialog, "Cannot book appointments in the past.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(dialog, "Invalid date format.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Invalid date format. Please use yyyy-MM-dd.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 

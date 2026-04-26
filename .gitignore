@@ -34,3 +34,6 @@ bin/
 ### HospiCare ###
 *.txt
 !src/**/*.txt
+
+# Helper scripts
+acp.bat
