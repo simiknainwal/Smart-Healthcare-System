@@ -65,7 +65,16 @@ public class DoctorManager {
         return true;
     }
 
-    // ==================== MENU ====================
+    // ==================== GET UNIQUE SPECIALIZATIONS (Collections & Sets) ====================
+    public java.util.Set<String> getUniqueSpecializations() {
+        java.util.Set<String> specializations = new java.util.HashSet<>();
+        for (Doctor doctor : doctors) {
+            specializations.add(doctor.getSpecialization());
+        }
+        return specializations;
+    }
+
+    // ==================== CLI MENU ====================
 
     public void showMenu(Scanner sc) {
         while (true) {

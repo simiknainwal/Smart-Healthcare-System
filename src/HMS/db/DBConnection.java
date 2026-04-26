@@ -15,7 +15,7 @@ import java.sql.Statement;
  * - Call DBConnection.getConnection() to get a live connection.
  * - Call DBConnection.initializeDatabase() once at startup to create tables.
  */
-public class DBConnection {
+public final class DBConnection {
 
     // All runtime data files live inside the "data" folder
     private static final String DATA_DIR = "data";

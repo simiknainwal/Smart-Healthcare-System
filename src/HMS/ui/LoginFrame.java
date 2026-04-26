@@ -86,7 +86,22 @@ public class LoginFrame extends JFrame {
         formPanel.add(createLabeledField("Username", txtUsername));
         formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         formPanel.add(createLabeledField("Password", txtPassword));
-        formPanel.add(Box.createRigidArea(new Dimension(0, 30)));
+        formPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+
+        JCheckBox chkShowPass = new JCheckBox("Show Password");
+        chkShowPass.setBackground(UIUtils.MAIN_BG);
+        chkShowPass.setFont(UIUtils.MAIN_FONT);
+        chkShowPass.setAlignmentX(Component.CENTER_ALIGNMENT);
+        chkShowPass.addActionListener(e -> {
+            if (chkShowPass.isSelected()) {
+                txtPassword.setEchoChar((char) 0);
+            } else {
+                txtPassword.setEchoChar('•');
+            }
+        });
+        formPanel.add(chkShowPass);
+
+        formPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         formPanel.add(btnLogin);
 
         add(formPanel, BorderLayout.CENTER);

@@ -40,9 +40,25 @@ public class Dashboard extends JFrame {
     private void initFrame() {
         setTitle("HospiCare Admin Dashboard");
         setSize(1000, 700);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
+
+        // Add WindowAdapter to satisfy Event Handling syllabus requirement
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                int confirm = JOptionPane.showConfirmDialog(
+                        Dashboard.this,
+                        "Are you sure you want to exit HospiCare?",
+                        "Exit Confirmation",
+                        JOptionPane.YES_NO_OPTION
+                );
+                if (confirm == JOptionPane.YES_OPTION) {
+                    System.exit(0);
+                }
+            }
+        });
     }
 
     private void initComponents() {
@@ -102,6 +118,16 @@ public class Dashboard extends JFrame {
         footerPanel.setLayout(new BoxLayout(footerPanel, BoxLayout.Y_AXIS));
         footerPanel.setBackground(UIUtils.SIDEBAR_BG);
         footerPanel.setBorder(new EmptyBorder(20, 0, 20, 0));
+        
+        JLabel lblClock = new JLabel();
+        lblClock.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblClock.setForeground(Color.LIGHT_GRAY);
+        lblClock.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblClock.setBorder(new EmptyBorder(0, 0, 10, 0));
+        HMS.utils.ClockThread clock = new HMS.utils.ClockThread(lblClock);
+        clock.start();
+        
+        footerPanel.add(lblClock);
         footerPanel.add(btnLogout);
         sidebar.add(footerPanel, BorderLayout.SOUTH);
 
