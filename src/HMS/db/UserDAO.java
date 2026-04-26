@@ -95,6 +95,20 @@ public class UserDAO {
         }
     }
 
+    /** Update user's credentials (username and password). */
+    public void updateCredentials(String oldUsername, String newUsername, String newPasswordHash) {
+        String sql = "UPDATE users SET username = ?, password_hash = ? WHERE username = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, newUsername);
+            ps.setString(2, newPasswordHash);
+            ps.setString(3, oldUsername);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("[UserDAO] Update credentials failed: " + e.getMessage());
+        }
+    }
+
     /** Helper: maps a ResultSet row to a User object. */
     private User mapRow(ResultSet rs) throws SQLException {
         return new User(

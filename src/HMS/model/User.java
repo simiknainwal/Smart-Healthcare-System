@@ -14,8 +14,8 @@ package HMS.model;
  */
 public class User {
 
-    private final String username;
-    private final String passwordHash;
+    private String username;
+    private String passwordHash;
     private final String role;        // "ADMIN", "DOCTOR", or "PATIENT"
     private final String linkedId;    // e.g. "D001" or "P003", empty for admin
     private final String createdAt;   // timestamp string
@@ -37,6 +37,14 @@ public class User {
 
     public String getPasswordHash() {
         return passwordHash;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public String getRole() {

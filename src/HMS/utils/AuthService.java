@@ -109,6 +109,31 @@ public class AuthService {
     }
 
     /**
+     * Updates the username and/or password for an existing user.
+     * Throws an IllegalArgumentException if validation fails.
+     */
+    public void updateCredentials(User currentUser, String newUsername, String newPassword) {
+        if (newUsername == null || newUsername.trim().isEmpty()) {
+            throw new IllegalArgumentException("Username cannot be empty.");
+        }
+        
+        if (!newUsername.equals(currentUser.getUsername()) && userDAO.findByUsername(newUsername) != null) {
+            throw new IllegalArgumentException("Username is already taken.");
+        }
+
+        if (newPassword == null || newPassword.length() < 8 || newPassword.length() > 12) {
+            throw new IllegalArgumentException("Password must be between 8 and 12 characters.");
+        }
+
+        String hashedPw = hashPassword(newPassword);
+        userDAO.updateCredentials(currentUser.getUsername(), newUsername, hashedPw);
+        
+        // Update the current user object in memory
+        currentUser.setUsername(newUsername);
+        currentUser.setPasswordHash(hashedPw);
+    }
+
+    /**
      * Seeds the default admin account if it doesn't exist.
      * Called automatically during database initialization.
      */

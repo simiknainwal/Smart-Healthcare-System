@@ -20,6 +20,7 @@ public class DoctorDashboard extends JFrame {
     private final Runnable onLogout;
 
     private Doctor doctor;
+    private final User currentUser;
 
     private CardLayout cardLayout;
     private JPanel mainContentPanel;
@@ -36,6 +37,7 @@ public class DoctorDashboard extends JFrame {
         this.billingManager = billingManager;
         this.onLogout = onLogout;
 
+        this.currentUser = user;
         this.doctor = doctorManager.findDoctor(user.getLinkedId());
 
         initFrame();
@@ -75,6 +77,7 @@ public class DoctorDashboard extends JFrame {
         JButton btnPrescribe = createNavButton("Prescribe", "PRESCRIBE");
         JButton btnHistory = createNavButton("Patient History", "HISTORY");
         JButton btnLookup = createNavButton("Patient Lookup", "LOOKUP");
+        JButton btnSettings = createNavButton("Settings", "SETTINGS");
 
         navPanel.add(btnProfile);
         navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
@@ -85,6 +88,8 @@ public class DoctorDashboard extends JFrame {
         navPanel.add(btnHistory);
         navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         navPanel.add(btnLookup);
+        navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        navPanel.add(btnSettings);
 
         sidebar.add(navPanel, BorderLayout.CENTER);
 
@@ -117,6 +122,7 @@ public class DoctorDashboard extends JFrame {
         mainContentPanel.add(createPrescribePanel(), "PRESCRIBE");
         mainContentPanel.add(createHistoryPanel(), "HISTORY");
         mainContentPanel.add(createLookupPanel(), "LOOKUP");
+        mainContentPanel.add(createSettingsPanel(), "SETTINGS");
 
         add(mainContentPanel, BorderLayout.CENTER);
 
@@ -546,6 +552,66 @@ public class DoctorDashboard extends JFrame {
 
         panel.add(searchBar, BorderLayout.NORTH);
         panel.add(resultArea, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private JPanel createSettingsPanel() {
+        JPanel panel = new JPanel(new BorderLayout(20, 20));
+        panel.setBackground(UIUtils.MAIN_BG);
+        panel.setBorder(new EmptyBorder(30, 30, 30, 30));
+
+        JLabel lblTitle = new JLabel("Account Settings");
+        lblTitle.setFont(UIUtils.TITLE_FONT);
+        lblTitle.setForeground(UIUtils.TEXT_PRIMARY);
+        panel.add(lblTitle, BorderLayout.NORTH);
+
+        JPanel form = new JPanel(new GridLayout(4, 2, 10, 10));
+        form.setBackground(Color.WHITE);
+        form.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(223, 230, 233)),
+                new EmptyBorder(20, 20, 20, 20)
+        ));
+
+        JLabel lblUser = new JLabel("New Username:");
+        JTextField txtUser = new JTextField(currentUser.getUsername());
+        
+        JLabel lblPass = new JLabel("New Password (8-12 chars):");
+        JPasswordField txtPass = new JPasswordField();
+        
+        JButton btnSave = new JButton("Update Credentials");
+        UIUtils.styleButton(btnSave, true);
+
+        form.add(lblUser);
+        form.add(txtUser);
+        form.add(lblPass);
+        form.add(txtPass);
+        form.add(new JLabel(""));
+        form.add(btnSave);
+
+        JPanel center = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        center.setBackground(UIUtils.MAIN_BG);
+        center.add(form);
+        panel.add(center, BorderLayout.CENTER);
+
+        btnSave.addActionListener(e -> {
+            String newUser = txtUser.getText().trim();
+            String newPass = new String(txtPass.getPassword()).trim();
+
+            if (newPass.isEmpty()) {
+                JOptionPane.showMessageDialog(panel, "Please enter a password.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            try {
+                HMS.utils.AuthService auth = new HMS.utils.AuthService();
+                auth.updateCredentials(currentUser, newUser, newPass);
+                JOptionPane.showMessageDialog(panel, "Credentials updated successfully.\nUsername: " + newUser, "Success", JOptionPane.INFORMATION_MESSAGE);
+                txtPass.setText("");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panel, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
         return panel;
     }
