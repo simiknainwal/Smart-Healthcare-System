@@ -495,8 +495,9 @@ public class DoctorDashboard extends JFrame {
         UIUtils.styleTable(table);
         JScrollPane sp = new JScrollPane(table);
         sp.setBorder(BorderFactory.createLineBorder(new Color(223, 230, 233)));
-        sp.setPreferredSize(new Dimension(Integer.MAX_VALUE, 130));
-        sp.setMaximumSize(new Dimension(Integer.MAX_VALUE, 130));
+        // Use Short.MAX_VALUE (32767) not Integer.MAX_VALUE — avoids OOM in Windows L&F skin painter
+        sp.setPreferredSize(new Dimension(Short.MAX_VALUE, 130));
+        sp.setMaximumSize(new Dimension(Short.MAX_VALUE, 130));
         sp.setAlignmentX(Component.LEFT_ALIGNMENT);
         return sp;
     }

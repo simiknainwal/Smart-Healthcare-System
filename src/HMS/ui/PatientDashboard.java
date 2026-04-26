@@ -80,12 +80,21 @@ public class PatientDashboard extends JFrame {
         JButton btnProfile = createNavButton("My Profile", "PROFILE");
         JButton btnAppointments = createNavButton("My Appointments", "APPOINTMENTS");
         JButton btnBed = createNavButton("My Bed Status", "BED");
+        JButton btnPrescriptions = createNavButton("My Prescriptions", "PRESCRIPTIONS");
+        JButton btnBills = createNavButton("My Bills", "BILLS");
+        JButton btnReports = createNavButton("My Reports", "REPORTS");
 
         navPanel.add(btnProfile);
         navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         navPanel.add(btnAppointments);
         navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         navPanel.add(btnBed);
+        navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        navPanel.add(btnPrescriptions);
+        navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        navPanel.add(btnBills);
+        navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        navPanel.add(btnReports);
 
         sidebar.add(navPanel, BorderLayout.CENTER);
 
@@ -116,6 +125,9 @@ public class PatientDashboard extends JFrame {
         mainContentPanel.add(createProfilePanel(), "PROFILE");
         mainContentPanel.add(createAppointmentsPanel(), "APPOINTMENTS");
         mainContentPanel.add(createBedPanel(), "BED");
+        mainContentPanel.add(createPrescriptionsPanel(), "PRESCRIPTIONS");
+        mainContentPanel.add(createBillsPanel(), "BILLS");
+        mainContentPanel.add(createReportsPanel(), "REPORTS");
 
         add(mainContentPanel, BorderLayout.CENTER);
 
@@ -514,5 +526,157 @@ public class PatientDashboard extends JFrame {
         dialog.add(form, BorderLayout.CENTER);
         dialog.add(bottom, BorderLayout.SOUTH);
         dialog.setVisible(true);
+    }
+    private JPanel createPrescriptionsPanel() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBackground(UIUtils.MAIN_BG);
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        JLabel lblTitle = new JLabel("My Prescriptions");
+        lblTitle.setFont(UIUtils.TITLE_FONT);
+        lblTitle.setForeground(UIUtils.TEXT_PRIMARY);
+        panel.add(lblTitle, BorderLayout.NORTH);
+
+        String[] cols = {"Pres. ID", "Doctor ID", "Medication", "Dosage", "Date"};
+        DefaultTableModel model = new DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        JTable table = new JTable(model);
+        UIUtils.styleTable(table);
+
+        if (patient != null) {
+            prescriptionManager.getPrescriptionsByPatient(patient.getId()).forEach(p ->
+                    model.addRow(new Object[]{
+                            p.getId(), p.getDoctorId(), p.getMedication(), p.getDosage(),
+                            HMS.utils.DateUtil.display(p.getDate())}));
+        }
+
+        if (model.getRowCount() == 0) {
+            model.addRow(new Object[]{"—", "No prescriptions on record.", "", "", ""});
+        }
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBorder(BorderFactory.createLineBorder(new Color(223, 230, 233)));
+        panel.add(scroll, BorderLayout.CENTER);
+        return panel;
+    }
+
+    private JPanel createBillsPanel() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBackground(UIUtils.MAIN_BG);
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        JLabel lblTitle = new JLabel("My Bills");
+        lblTitle.setFont(UIUtils.TITLE_FONT);
+        lblTitle.setForeground(UIUtils.TEXT_PRIMARY);
+        panel.add(lblTitle, BorderLayout.NORTH);
+
+        String[] cols = {"Bill ID", "Description", "Amount (₹)", "Date", "Status"};
+        DefaultTableModel model = new DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        JTable table = new JTable(model);
+        UIUtils.styleTable(table);
+
+        // Colour-code UNPAID rows
+        table.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public java.awt.Component getTableCellRendererComponent(
+                    JTable t, Object val, boolean selected, boolean focused, int row, int col) {
+                super.getTableCellRendererComponent(t, val, selected, focused, row, col);
+                String status = (String) t.getModel().getValueAt(row, 4);
+                if (!selected) {
+                    setBackground("UNPAID".equals(status) ? new Color(255, 243, 230) : new Color(232, 255, 243));
+                }
+                return this;
+            }
+        });
+
+        if (patient != null) {
+            billingManager.getBillsByPatient(patient.getId()).forEach(b ->
+                    model.addRow(new Object[]{
+                            b.getId(), b.getDescription(),
+                            String.format("%.2f", b.getAmount()),
+                            HMS.utils.DateUtil.display(b.getDate()), b.getStatus()}));
+        }
+
+        if (model.getRowCount() == 0) {
+            model.addRow(new Object[]{"—", "No bills on record.", "", "", ""});
+        }
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBorder(BorderFactory.createLineBorder(new Color(223, 230, 233)));
+        panel.add(scroll, BorderLayout.CENTER);
+
+        JLabel note = new JLabel("  Note: Payments are processed at the billing counter.");
+        note.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        note.setForeground(Color.GRAY);
+        panel.add(note, BorderLayout.SOUTH);
+        return panel;
+    }
+
+    private JPanel createReportsPanel() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBackground(UIUtils.MAIN_BG);
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        JLabel lblTitle = new JLabel("My Medical Reports");
+        lblTitle.setFont(UIUtils.TITLE_FONT);
+        lblTitle.setForeground(UIUtils.TEXT_PRIMARY);
+        panel.add(lblTitle, BorderLayout.NORTH);
+
+        // Top: summary table
+        String[] cols = {"Report ID", "Type", "Doctor ID", "Date"};
+        DefaultTableModel model = new DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        JTable table = new JTable(model);
+        UIUtils.styleTable(table);
+
+        List<HMS.model.MedReport> reports = patient != null
+                ? reportManager.getReportsByPatient(patient.getId())
+                : new java.util.ArrayList<>();
+
+        reports.forEach(r -> model.addRow(new Object[]{
+                r.getId(), r.getType(), r.getDoctorId(),
+                HMS.utils.DateUtil.display(r.getDate())}));
+
+        if (model.getRowCount() == 0) {
+            model.addRow(new Object[]{"—", "No reports on record.", "", ""});
+        }
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBorder(BorderFactory.createLineBorder(new Color(223, 230, 233)));
+        scroll.setPreferredSize(new Dimension(0, 200));
+
+        // Bottom: content viewer — shows selected row's content
+        JLabel lblContent = new JLabel("Select a report above to read its contents.");
+        lblContent.setFont(new Font("Segoe UI", Font.ITALIC, 13));
+        lblContent.setForeground(Color.GRAY);
+
+        JTextArea txtContent = new JTextArea();
+        txtContent.setFont(UIUtils.MAIN_FONT);
+        txtContent.setLineWrap(true);
+        txtContent.setWrapStyleWord(true);
+        txtContent.setEditable(false);
+        txtContent.setBackground(Color.WHITE);
+        txtContent.setBorder(new EmptyBorder(10, 10, 10, 10));
+        JScrollPane contentScroll = new JScrollPane(txtContent);
+        contentScroll.setBorder(BorderFactory.createTitledBorder("Report Content"));
+
+        table.getSelectionModel().addListSelectionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row >= 0 && row < reports.size()) {
+                txtContent.setText(reports.get(row).getContent());
+            }
+        });
+
+        JPanel center = new JPanel(new BorderLayout(10, 10));
+        center.setBackground(UIUtils.MAIN_BG);
+        center.add(scroll, BorderLayout.NORTH);
+        center.add(contentScroll, BorderLayout.CENTER);
+
+        panel.add(center, BorderLayout.CENTER);
+        return panel;
     }
 }

@@ -70,6 +70,8 @@ public class Dashboard extends JFrame {
         JButton btnDoctors = createNavButton("Doctors", "DOCTORS");
         JButton btnAppointments = createNavButton("Appointments", "APPOINTMENTS");
         JButton btnBeds = createNavButton("Beds", "BEDS");
+        JButton btnBilling = createNavButton("Billing", "BILLING");
+        JButton btnAccounts = createNavButton("Accounts", "ACCOUNTS");
 
         navPanel.add(btnOverview);
         navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
@@ -80,6 +82,10 @@ public class Dashboard extends JFrame {
         navPanel.add(btnAppointments);
         navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         navPanel.add(btnBeds);
+        navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        navPanel.add(btnBilling);
+        navPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        navPanel.add(btnAccounts);
 
         sidebar.add(navPanel, BorderLayout.CENTER);
 
@@ -111,6 +117,8 @@ public class Dashboard extends JFrame {
         mainContentPanel.add(new DoctorPanel(doctorManager), "DOCTORS");
         mainContentPanel.add(new AppointmentPanel(appointmentManager), "APPOINTMENTS");
         mainContentPanel.add(new BedPanel(bedManager), "BEDS");
+        mainContentPanel.add(createBillingPanel(), "BILLING");
+        mainContentPanel.add(createAccountsPanel(), "ACCOUNTS");
 
         // Welcome Panel (Overview Dashboard)
         JPanel welcomePanel = new JPanel(new BorderLayout(20, 20));
@@ -175,5 +183,177 @@ public class Dashboard extends JFrame {
         btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
         btn.addActionListener(e -> cardLayout.show(mainContentPanel, cardName));
         return btn;
+    }
+
+    private JPanel createBillingPanel() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBackground(UIUtils.MAIN_BG);
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        JLabel lblTitle = new JLabel("Billing Overview");
+        lblTitle.setFont(UIUtils.TITLE_FONT);
+        lblTitle.setForeground(UIUtils.TEXT_PRIMARY);
+        panel.add(lblTitle, BorderLayout.NORTH);
+
+        // Filter bar
+        JPanel filterBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        filterBar.setBackground(UIUtils.MAIN_BG);
+        String[] filters = {"ALL", "UNPAID", "PAID"};
+        JComboBox<String> comboFilter = new JComboBox<>(filters);
+        comboFilter.setFont(UIUtils.MAIN_FONT);
+        filterBar.add(new JLabel("Show:"));
+        filterBar.add(comboFilter);
+
+        // Table
+        String[] cols = {"Bill ID", "Patient ID", "Description", "Amount (₹)", "Date", "Status"};
+        javax.swing.table.DefaultTableModel billModel = new javax.swing.table.DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        JTable billTable = new JTable(billModel);
+        UIUtils.styleTable(billTable);
+
+        // Colour-code rows
+        billTable.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public java.awt.Component getTableCellRendererComponent(
+                    JTable t, Object val, boolean selected, boolean focused, int row, int col) {
+                super.getTableCellRendererComponent(t, val, selected, focused, row, col);
+                String status = (String) t.getModel().getValueAt(row, 5);
+                if (!selected) {
+                    setBackground("UNPAID".equals(status) ? new Color(255, 243, 230) : new Color(232, 255, 243));
+                }
+                return this;
+            }
+        });
+
+        // Populate method
+        Runnable populate = () -> {
+            billModel.setRowCount(0);
+            String filter = (String) comboFilter.getSelectedItem();
+            billingManager.getAll().stream()
+                    .filter(b -> "ALL".equals(filter) || b.getStatus().equals(filter))
+                    .forEach(b -> billModel.addRow(new Object[]{
+                            b.getId(), b.getPatientId(), b.getDescription(),
+                            String.format("%.2f", b.getAmount()),
+                            HMS.utils.DateUtil.display(b.getDate()), b.getStatus()}));
+        };
+        populate.run();
+        comboFilter.addActionListener(e -> populate.run());
+
+        JScrollPane scroll = new JScrollPane(billTable);
+        scroll.setBorder(BorderFactory.createLineBorder(new Color(223, 230, 233)));
+
+        // Bottom buttons
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        bottom.setBackground(UIUtils.MAIN_BG);
+
+        JButton btnPaid = new JButton("Mark as Paid");
+        UIUtils.styleButton(btnPaid, true);
+        btnPaid.setBackground(new Color(46, 204, 113));
+        btnPaid.addActionListener(e -> {
+            int row = billTable.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(panel, "Select a bill first.", "Warning", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            String billId = (String) billModel.getValueAt(row, 0);
+            boolean changed = billingManager.markAsPaid(billId);
+            if (changed) {
+                populate.run();
+                JOptionPane.showMessageDialog(panel, "Bill " + billId + " marked as PAID.", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(panel, "Bill is already PAID.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+
+        JButton btnRefresh = new JButton("Refresh");
+        UIUtils.styleButton(btnRefresh, false);
+        btnRefresh.addActionListener(e -> populate.run());
+
+        bottom.add(btnRefresh);
+        bottom.add(btnPaid);
+
+        JPanel north = new JPanel(new BorderLayout());
+        north.setBackground(UIUtils.MAIN_BG);
+        north.add(lblTitle, BorderLayout.NORTH);
+        north.add(filterBar, BorderLayout.SOUTH);
+        panel.add(north, BorderLayout.NORTH);
+        panel.add(scroll, BorderLayout.CENTER);
+        panel.add(bottom, BorderLayout.SOUTH);
+        return panel;
+    }
+
+    private JPanel createAccountsPanel() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBackground(UIUtils.MAIN_BG);
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        JLabel lblTitle = new JLabel("Manage User Accounts");
+        lblTitle.setFont(UIUtils.TITLE_FONT);
+        lblTitle.setForeground(UIUtils.TEXT_PRIMARY);
+        panel.add(lblTitle, BorderLayout.NORTH);
+
+        String[] cols = {"Username", "Role", "Linked ID", "Created At"};
+        javax.swing.table.DefaultTableModel userModel = new javax.swing.table.DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        JTable userTable = new JTable(userModel);
+        UIUtils.styleTable(userTable);
+
+        HMS.db.UserDAO userDAO = new HMS.db.UserDAO();
+
+        Runnable refreshUsers = () -> {
+            userModel.setRowCount(0);
+            userDAO.getAll().forEach(u -> userModel.addRow(new Object[]{
+                    u.getUsername(), u.getRole(), u.getLinkedId(), u.getCreatedAt()
+            }));
+        };
+        refreshUsers.run();
+
+        JScrollPane scroll = new JScrollPane(userTable);
+        scroll.setBorder(BorderFactory.createLineBorder(new Color(223, 230, 233)));
+
+        // Bottom buttons
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        bottom.setBackground(UIUtils.MAIN_BG);
+
+        JButton btnDelete = new JButton("Delete Account");
+        UIUtils.styleDangerButton(btnDelete);
+        btnDelete.addActionListener(e -> {
+            int row = userTable.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(panel, "Select an account to delete.", "Warning", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            String username = (String) userModel.getValueAt(row, 0);
+            String role = (String) userModel.getValueAt(row, 1);
+            
+            if ("ADMIN".equals(role)) {
+                JOptionPane.showMessageDialog(panel, "Cannot delete admin accounts.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            int confirm = JOptionPane.showConfirmDialog(panel, 
+                    "Are you sure you want to delete user account: " + username + "?\n" +
+                    "(This does not delete their patient/doctor profile)", 
+                    "Confirm Deletion", JOptionPane.YES_NO_OPTION);
+            
+            if (confirm == JOptionPane.YES_OPTION) {
+                userDAO.delete(username);
+                refreshUsers.run();
+                JOptionPane.showMessageDialog(panel, "Account deleted successfully.");
+            }
+        });
+
+        JButton btnRefresh = new JButton("Refresh");
+        UIUtils.styleButton(btnRefresh, false);
+        btnRefresh.addActionListener(e -> refreshUsers.run());
+
+        bottom.add(btnRefresh);
+        bottom.add(btnDelete);
+
+        panel.add(scroll, BorderLayout.CENTER);
+        panel.add(bottom, BorderLayout.SOUTH);
+        return panel;
     }
 }
